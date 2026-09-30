@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FM App — Premium UI</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Outfit:wght@200..800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg-0:#031215;
+  --bg-1:#061c21;
+  --panel:#0a272d;
+  --panel-2:#0d3037;
+
+  --gold-1:#fff8dc;
+  --gold-2:#f4dc8a;
+  --gold-3:#d4af37;
+  --gold-4:#9c7418;
+  --gold-grad: linear-gradient(115deg,#fff8dc 0%,#f4dc8a 16%,#d4af37 34%,#8a6318 50%,#d4af37 66%,#f7e79c 84%,#fff8dc 100%);
+
+  --teal:#20e3b2;
+  --text:#eaf6f6;
+  --muted:#7fa3a6;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Outfit','Hind Siliguri',sans-serif;
+  background:
+    radial-gradient(900px 600px at 50% -10%, #0d3b42 0%, transparent 60%),
+    radial-gradient(700px 500px at 110% 100%, #123c33 0%, transparent 55%),
+    #031215;
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:0;
+  overflow-x:hidden;
+}
+
+/* ============ APP SHELL ============ */
+.app-container{
+  width:100%;
+  max-width:430px;
+  min-height:100vh;
+  position:relative;
+  overflow:hidden;
+  padding-bottom:110px;
+  background:
+    radial-gradient(600px 320px at 50% -5%, rgba(32,227,178,.10), transparent 65%),
+    radial-gradient(500px 400px at 100% 40%, rgba(212,175,55,.06), transparent 60%),
+    linear-gradient(180deg,#061c21 0%,#04161a 55%,#031114 100%);
+  box-shadow:0 0 80px rgba(0,0,0,.8);
+}
+
+.app-container::before{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(212,175,55,.18), transparent 30%, transparent 75%, rgba(212,175,55,.12));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  padding:1px; pointer-events:none; z-index:5;
+}
+
+/* ============ TOP BAR ============ */
+.top-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:22px 20px 14px;
+  position:relative;
+  z-index:6;
+}
+
+.profile-wrap{display:flex; align-items:center; gap:12px}
+
+.avatar-ring{
+  width:48px;height:48px;
+  border-radius:50%;
+  padding:2px;
+  background:var(--gold-grad);
+  background-size:200% 200%;
+  animation:goldShift 7s ease infinite;
+  box-shadow:0 0 18px rgba(212,175,55,.35);
+  flex-shrink:0;
+}
+.avatar-ring img{
+  width:100%;height:100%;
+  border-radius:50%;
+  object-fit:cover;
+  display:block;
+  border:2px solid #061c21;
+}
+
+.greet{display:flex;flex-direction:column;line-height:1.15}
+.greet .hi{
+  font-size:10px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--muted);
+  font-weight:500;
+}
+.greet .name{
+  font-size:15px;
+  font-weight:600;
+  background:var(--gold-grad);
+  background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:goldShift 7s ease infinite;
+}
+
+.head-actions{display:flex;gap:10px}
+
+.icon-btn{
+  width:40px;height:40px;
+  display:grid;place-items:center;
+  border-radius:14px;
+  font-size:16px;
+  color:#cfe9e8;
+  background:linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+  border:1px solid rgba(212,175,55,.22);
+  backdrop-filter:blur(10px);
+  cursor:pointer;
+  transition:.25s;
+}
+.icon-btn:hover{
+  color:#fff;
+  border-color:rgba(212,175,55,.6);
+  box-shadow:0 0 18px rgba(212,175,55,.25);
+  transform:translateY(-2px);
+}
+
+/* ============ GOLD FRAME ============ */
+.gold-frame{
+  position:relative;
+  padding:1px;
+  border-radius:24px;
+  background:var(--gold-grad);
+  background-size:220% 220%;
+  animation:goldShift 8s ease infinite;
+  box-shadow:
+    0 0 0 1px rgba(212,175,55,.06),
+    0 18px 40px rgba(0,0,0,.55),
+    0 0 28px rgba(212,175,55,.10);
+}
+
+@keyframes goldShift{
+  0%,100%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+}
+
+/* ============ FM BANNER ============ */
+.banner-container{padding:4px 16px 0;}
+
+.fm-banner{
+  border-radius:23px;
+  padding:14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:
+    radial-gradient(220px 120px at 0% 0%, rgba(32,227,178,.16), transparent 70%),
+    radial-gradient(200px 140px at 100% 100%, rgba(212,175,55,.10), transparent 70%),
+    linear-gradient(160deg,#0c2f35 0%,#071e23 100%);
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;
+  transition:transform .25s;
+}
+.fm-banner:active{transform:scale(.985)}
+
+.fm-banner::after{
+  content:"";
+  position:absolute; top:0; left:-60%;
+  width:45%; height:100%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.10), transparent);
+  transform:skewX(-18deg);
+  animation:sweep 5.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes sweep{
+  0%{left:-60%}
+  55%{left:130%}
+  100%{left:130%}
+}
+
+.vinyl{
+  position:relative;
+  width:58px;height:58px;
+  flex-shrink:0;
+  display:grid;place-items:center;
+}
+.vinyl .ring{
+  position:absolute; inset:0;
+  border-radius:50%;
+  padding:2px;
+  background:var(--gold-grad);
+  background-size:200% 200%;
+  animation:goldShift 6s ease infinite;
+  box-shadow:0 0 16px rgba(212,175,55,.35);
+}
+.vinyl .disc{
+  position:absolute; inset:3px;
+  border-radius:50%;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.055) 0 1px, transparent 1px 4px),
+    radial-gradient(circle at 50% 50%, #14424a 0%, #061a1e 72%);
+  animation:spin 6s linear infinite;
+}
+.vinyl .disc::after{
+  content:"";
+  position:absolute; inset:0; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,.13) 45deg, transparent 95deg, transparent 190deg, rgba(212,175,55,.22) 235deg, transparent 290deg);
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.vinyl-label{
+  position:relative;
+  z-index:2;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.06em;
+  background:var(--gold-grad);
+  background-size:200% auto;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 0 12px rgba(212,175,55,.5);
+}
+
+.banner-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px}
+
+.live-row{
+  display:flex; align-items:center; gap:6px;
+  font-size:9px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase;
+  color:#ff6b6b;
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#ff4d4d;
+  box-shadow:0 0 0 0 rgba(255,77,77,.7);
+  animation:pulse 1.6s infinite;
+}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(255,77,77,.65)}
+  70%{box-shadow:0 0 0 7px rgba(255,77,77,0)}
+  100%{box-shadow:0 0 0 0 rgba(255,77,77,0)}
+}
+
+.fm-banner .title{
+  font-size:14.5px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#ffffff;
+}
+.fm-banner .subtitle{
+  font-size:11px;
+  color:#a9cdcd;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.fm-banner .listeners{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:10.5px;
+  font-weight:600;
+  color:var(--teal);
+  margin-top:1px;
+}
+.fm-banner .listeners i{font-size:9px}
+
+.mine-btn{
+  flex-shrink:0;
+  position:relative;
+  border:none;
+  cursor:pointer;
+  padding:9px 16px;
+  border-radius:14px;
+  font-family:inherit;
+  font-size:11.5px;
+  font-weight:700;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:#1a1405;
+  background:var(--gold-grad);
+  background-size:200% 200%;
+  animation:goldShift 6s ease infinite;
+  box-shadow:0 6px 18px rgba(212,175,55,.35), inset 0 1px 0 rgba(255,255,255,.6);
+  transition:.25s;
+  z-index:3;
+}
+.mine-btn:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(212,175,55,.5), inset 0 1px 0 rgba(255,255,255,.7)}
+.mine-btn:active{transform:translateY(0) scale(.97)}
+
+.banner-progress{
+  position:absolute;
+  left:14px; right:14px; bottom:0;
+  height:2px;
+  border-radius:2px;
+  background:rgba(255,255,255,.07);
+  overflow:hidden;
+  pointer-events:none;
+}
+.banner-progress span{
+  display:block;
+  height:100%;
+  width:38%;
+  border-radius:2px;
+  background:var(--gold-grad);
+  background-size:200% 100%;
+  animation:goldShift 5s ease infinite;
+}
+
+/* ============ TABS ============ */
+.tab-section{
+  display:flex;
+  align-items:center;
+  gap:26px;
+  padding:22px 22px 14px;
+}
+
+.tab{
+  position:relative;
+  font-size:15px;
+  font-weight:600;
+  color:var(--muted);
+  cursor:pointer;
+  padding-bottom:8px;
+  transition:.25s;
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:none;
+  border:none;
+  font-family:inherit;
+}
+.tab:hover{color:#bcd9d8}
+
+.tab.active{
+  color:#fff;
+  font-size:17px;
+  font-weight:700;
+}
+.tab.active::after{
+  content:"";
+  position:absolute;
+  left:0; bottom:0;
+  width:100%; height:2px;
+  border-radius:2px;
+  background:var(--gold-grad);
+  background-size:200% 100%;
+  animation:goldShift 5s ease infinite;
+  box-shadow:0 0 12px rgba(212,175,55,.75);
+}
+.tab .fire{
+  font-size:13px;
+  filter:drop-shadow(0 0 6px rgba(255,140,0,.8));
+}
+
+/* ============ TAB VIEWS ============ */
+.tab-view{display:none}
+.tab-view.active{display:block}
+
+/* ===== HOT (iframe) ===== */
+.hot-frame-wrap{
+  padding:0 16px;
+}
+.hot-frame-box{
+  position:relative;
+  border-radius:22px;
+  overflow:hidden;
+  background:#082024;
+  box-shadow:
+    0 0 0 1px rgba(212,175,55,.14),
+    0 18px 40px rgba(0,0,0,.55),
+    0 0 28px rgba(212,175,55,.10);
+}
+.hot-frame{
+  display:block;
+  width:100%;
+  height: calc(100vh - 340px);
+  min-height:420px;
+  border:none;
+  background:#082024;
+}
+.hot-frame-loading{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  background:#082024;
+  color:var(--muted);
+  font-size:12.5px;
+  gap:10px;
+  pointer-events:none;
+  transition:opacity .35s;
+}
+.hot-frame-loading.hide{opacity:0}
+.hot-frame-loading .spinner{
+  width:28px;height:28px;
+  border-radius:50%;
+  border:2px solid rgba(212,175,55,.2);
+  border-top-color:var(--gold-2);
+  animation:rot 0.9s linear infinite;
+  margin:0 auto 10px;
+}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* ============ GRID (Following) ============ */
+.grid-container{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  padding:0 16px;
+}
+
+.room-card{
+  border-radius:22px;
+  cursor:pointer;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s;
+  animation:fadeUp .45s ease both;
+}
+.room-card:hover{
+  transform:translateY(-5px);
+  box-shadow:
+    0 0 0 1px rgba(212,175,55,.10),
+    0 22px 45px rgba(0,0,0,.6),
+    0 0 34px rgba(212,175,55,.22);
+}
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(12px)}
+  to{opacity:1; transform:translateY(0)}
+}
+
+.card-inner{
+  position:relative;
+  border-radius:21px;
+  overflow:hidden;
+  background:#082024;
+  aspect-ratio:1/1.12;
+}
+
+.card-inner img{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+  transition:transform .6s cubic-bezier(.2,.8,.2,1);
+  filter:saturate(1.05) contrast(1.05);
+}
+.room-card:hover .card-inner img{transform:scale(1.07)}
+
+.card-overlay{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(3,18,21,.55) 0%, transparent 32%, transparent 42%, rgba(3,18,21,.92) 100%);
+}
+
+.card-top{
+  position:absolute;
+  top:9px; left:9px; right:9px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:6px;
+}
+.badge-top{
+  font-size:8.5px;
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  padding:4px 8px;
+  border-radius:8px;
+  color:#1a1405;
+  background:var(--gold-grad);
+  background-size:200% 200%;
+  animation:goldShift 6s ease infinite;
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
+}
+.badge-live{
+  display:flex;align-items:center;gap:4px;
+  font-size:8.5px;font-weight:700;letter-spacing:.1em;
+  padding:4px 8px;border-radius:8px;
+  color:#ffd9d9;
+  background:rgba(200,30,30,.35);
+  border:1px solid rgba(255,90,90,.45);
+  backdrop-filter:blur(6px);
+}
+.badge-live i{font-size:5px}
+
+.room-info{
+  position:absolute;
+  left:0; right:0; bottom:0;
+  padding:10px 11px 11px;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.room-title{
+  font-size:12.5px;
+  font-weight:600;
+  line-height:1.35;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  color:#fff;
+  text-shadow:0 2px 8px rgba(0,0,0,.9);
+}
+.room-stats{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.tag{
+  font-size:9px;
+  font-weight:600;
+  letter-spacing:.04em;
+  padding:3px 8px;
+  border-radius:999px;
+  color:#f4dc8a;
+  background:rgba(212,175,55,.12);
+  border:1px solid rgba(212,175,55,.38);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:70px;
+}
+.count{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:10px;
+  font-weight:700;
+  color:var(--teal);
+  text-shadow:0 0 10px rgba(32,227,178,.4);
+}
+.count i{font-size:8.5px}
+
+/* ============ SKELETON / EMPTY ============ */
+.skeleton{
+  border-radius:22px;
+  background:linear-gradient(110deg,#0a272d 8%,#0d3037 18%,#0a272d 33%);
+  background-size:200% 100%;
+  animation:shimmer 1.4s linear infinite;
+  aspect-ratio:1/1.12;
+  border:1px solid rgba(212,175,55,.10);
+}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+.empty-state{
+  grid-column:1 / -1;
+  text-align:center;
+  padding:60px 24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:14px;
+}
+.empty-state .empty-icon{
+  width:78px;height:78px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  font-size:30px;
+  color:var(--gold-2);
+  background:linear-gradient(160deg, rgba(212,175,55,.18), rgba(212,175,55,.03));
+  border:1px solid rgba(212,175,55,.35);
+  box-shadow:0 0 30px rgba(212,175,55,.18);
+}
+.empty-state h3{
+  font-size:16px;
+  color:#fff;
+  font-weight:600;
+}
+.empty-state p{
+  font-size:12.5px;
+  color:var(--muted);
+  line-height:1.6;
+  max-width:260px;
+}
+
+/* ============ BOTTOM NAV ============ */
+.bottom-nav{
+  position:fixed;
+  bottom:0; left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:430px;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  padding:12px 14px calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg, rgba(6,28,33,.72), rgba(3,17,20,.96));
+  backdrop-filter:blur(22px) saturate(150%);
+  -webkit-backdrop-filter:blur(22px) saturate(150%);
+  z-index:50;
+}
+.bottom-nav::before{
+  content:"";
+  position:absolute;
+  top:0; left:0; right:0;
+  height:1px;
+  background:var(--gold-grad);
+  background-size:200% 100%;
+  animation:goldShift 8s ease infinite;
+  opacity:.55;
+}
+
+.nav-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:5px;
+  text-decoration:none;
+  color:#5d868a;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  transition:.25s;
+  position:relative;
+  padding:2px 12px;
+  cursor:pointer;
+}
+.nav-item .nav-icon{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:40px;height:34px;
+  border-radius:12px;
+  font-size:18px;
+  transition:.25s;
+}
+.nav-item:hover{color:#9dc3c4}
+
+.nav-item.active{color:var(--gold-2)}
+.nav-item.active .nav-icon{
+  background:linear-gradient(160deg, rgba(212,175,55,.20), rgba(212,175,55,.05));
+  border:1px solid rgba(212,175,55,.4);
+  box-shadow:0 0 20px rgba(212,175,55,.28), inset 0 1px 0 rgba(255,255,255,.10);
+  color:#f4dc8a;
+}
+.nav-item.active::after{
+  content:"";
+  position:absolute;
+  top:-13px; left:50%;
+  transform:translateX(-50%);
+  width:24px;height:2px;
+  border-radius:2px;
+  background:var(--gold-grad);
+  background-size:200% 100%;
+  animation:goldShift 5s ease infinite;
+  box-shadow:0 0 12px rgba(212,175,55,.9);
+}
+
+.badge{
+  position:absolute;
+  top:-3px; right:2px;
+  min-width:16px;height:16px;
+  padding:0 4px;
+  display:grid;place-items:center;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:800;
+  font-style:normal;
+  color:#fff;
+  background:linear-gradient(145deg,#ff5b5b,#c81e1e);
+  border:1.5px solid #062026;
+  box-shadow:0 0 10px rgba(255,70,70,.7);
+}
+
+::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ===== TOP BAR ===== -->
+  <div class="top-bar">
+    <div class="profile-wrap">
+      <div class="avatar-ring">
+        <img id="userAvatar" src="https://i.pravatar.cc/120?img=12" alt="profile">
+      </div>
+      <div class="greet">
+        <span class="hi" id="greetText">Good Evening</span>
+        <span class="name" id="userName">Guest</span>
+      </div>
+    </div>
+
+    <div class="head-actions">
+      <div class="icon-btn"><i class="fa-solid fa-magnifying-glass"></i></div>
+      <div class="icon-btn"><i class="fa-regular fa-bell"></i></div>
+    </div>
+  </div>
+
+  <!-- ===== FM BANNER (CLICKABLE → Owner-room) ===== -->
+  <div class="banner-container">
+    <div class="gold-frame">
+      <div class="fm-banner" id="fmBanner" role="link" tabindex="0">
+        <div class="vinyl">
+          <div class="ring"></div>
+          <div class="disc"></div>
+          <span class="vinyl-label">FM</span>
+        </div>
+
+        <div class="banner-info">
+          <div class="live-row"><span class="live-dot"></span> Live Now</div>
+          <div class="title" id="bannerTitle">📻 24 HOUR 🎵 FM 🎵</div>
+          <div class="subtitle" id="bannerSubtitle">🎧 FM 📻 ➡ SP 🎤 Room 🎵</div>
+          <div class="listeners" id="bannerListeners"><i class="fa-solid fa-headphones"></i> Tap to enter</div>
+        </div>
+
+        <button class="mine-btn" id="mineBtn">Mine</button>
+
+        <div class="banner-progress"><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TABS ===== -->
+  <div class="tab-section">
+    <button class="tab active" data-tab="hot"><span class="fire">🔥</span> Hot</button>
+    <button class="tab" data-tab="following">Following</button>
+  </div>
+
+  <!-- ===== HOT VIEW (iframe → Hot-room) ===== -->
+  <div class="tab-view active" id="view-hot">
+    <div class="hot-frame-wrap">
+      <div class="hot-frame-box">
+        <iframe
+          id="hotIframe"
+          class="hot-frame"
+          src="https://farjanaaktar1173-boop.github.io/Hot-room/"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allow="autoplay; clipboard-read; clipboard-write"
+        ></iframe>
+        <div class="hot-frame-loading" id="hotLoader">
+          <div>
+            <div class="spinner"></div>
+            রুম লোড হচ্ছে…
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOLLOWING VIEW (Firebase rooms) ===== -->
+  <div class="tab-view" id="view-following">
+    <div class="grid-container" id="roomsGrid">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  </div>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav">
+    <a href="javascript:void(0)" class="nav-item active" id="navRoom">
+      <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
+      <span>Room</span>
+    </a>
+    <a href="javascript:void(0)" class="nav-item" id="navChat">
+      <span class="nav-icon">
+        <i class="fa-solid fa-comment-dots"></i>
+        <em class="badge">4</em>
+      </span>
+      <span>Messages</span>
+    </a>
+    <a href="javascript:void(0)" class="nav-item" id="navMe">
+      <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
+      <span>Me</span>
+    </a>
+  </nav>
+
+</div>
+
+<!-- ===================== LINKS + FIREBASE ===================== -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-analytics.js";
+import {
+  getDatabase, ref, onValue, query, orderByChild
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+/* ---------- 🔗 YOUR LINKS ---------- */
+const LINKS = {
+  ownerRoom : "https://farjanaaktar1173-boop.github.io/Owner-room/",
+  hotRoom   : "https://farjanaaktar1173-boop.github.io/Hot-room/",
+  chat      : "https://farjanaaktar1173-boop.github.io/Chat/",
+  me        : "https://farjanaaktar1173-boop.github.io/Me/",
+  mineBtn   : "https://farjanaaktar1173-boop.github.io/Owner-room/" // চাইলে আলাদা লিংক দিতে পারেন
+};
+
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCTn3QEYtRMxm7Y91RSFSvbRJSRHcXMEdI",
+  authDomain: "room-7fbf7.firebaseapp.com",
+  databaseURL: "https://room-7fbf7-default-rtdb.firebaseio.com",
+  projectId: "room-7fbf7",
+  storageBucket: "room-7fbf7.firebasestorage.app",
+  messagingSenderId: "417946695868",
+  appId: "1:417946695868:web:34c6f63269aaf659b2b8b9",
+  measurementId: "G-EG726ZPVK7"
+};
+const app = initializeApp(firebaseConfig);
+try { getAnalytics(app); } catch(e) {}
+const db  = getDatabase(app);
+
+/* ---------- Helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+
+function formatCount(n){
+  n = Number(n) || 0;
+  if (n >= 1000000) return (n/1000000).toFixed(2).replace(/\.00$/,'') + 'M';
+  if (n >= 1000)    return (n/1000).toFixed(2).replace(/\.00$/,'') + 'K';
+  return String(n);
+}
+
+/* ---------- User Info ---------- */
+const user = { name:"Guest", photo:"https://i.pravatar.cc/120?img=12", uid:null, following:[] };
+(function loadUser(){
+  const p = new URLSearchParams(location.search);
+  if (p.get("name"))  user.name  = p.get("name");
+  if (p.get("photo")) user.photo = p.get("photo");
+  if (p.get("uid"))   user.uid   = p.get("uid");
+
+  try {
+    const raw = localStorage.getItem("fmUser") || sessionStorage.getItem("fmUser");
+    if (raw){
+      const u = JSON.parse(raw);
+      user.name  = u.name  || u.displayName || user.name;
+      user.photo = u.photo || u.photoURL    || user.photo;
+      user.uid   = u.uid   || u.id          || user.uid;
+      if (Array.isArray(u.following)) user.following = u.following;
+    }
+  } catch(e){}
+
+  $("userName").textContent = user.name;
+  $("userAvatar").src       = user.photo;
+
+  const h = new Date().getHours();
+  $("greetText").textContent =
+    h < 12 ? "Good Morning" :
+    h < 17 ? "Good Afternoon" :
+    h < 21 ? "Good Evening" : "Good Night";
+})();
+
+/* ============================================================
+   🔗 LINK HANDLERS — চারটা বাটনের কাজ
+   ============================================================ */
+
+/* 1) FM BANNER → Owner-room */
+function openOwnerRoom(){
+  location.href = LINKS.ownerRoom;
+}
+$("fmBanner").addEventListener("click", (e) => {
+  if (e.target.closest("#mineBtn")) return; // Mine আলাদা
+  openOwnerRoom();
+});
+$("fmBanner").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openOwnerRoom(); }
+});
+
+/* Mine বাটন (চাইলে আলাদা লিংক দিতে পারেন) */
+$("mineBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  location.href = LINKS.mineBtn;
+});
+
+/* 2) HOT TAB → iframe (Hot-room) */
+(function setupHotIframe(){
+  const iframe = $("hotIframe");
+  const loader = $("hotLoader");
+  if (!iframe) return;
+  iframe.src = LINKS.hotRoom;
+  iframe.addEventListener("load", () => loader?.classList.add("hide"), { once:true });
+  // fallback: ৪ সেকেন্ড পর লোডার লুকাও
+  setTimeout(() => loader?.classList.add("hide"), 4000);
+})();
+
+/* 3) Messages → Chat */
+$("navChat").addEventListener("click", () => location.href = LINKS.chat);
+
+/* 4) Me → Me */
+$("navMe").addEventListener("click", () => location.href = LINKS.me);
+
+/* Room — active মাত্র, কিছু করবে না */
+$("navRoom").addEventListener("click", () => {
+  window.scrollTo({ top:0, behavior:"smooth" });
+});
+
+/* ============================================================
+   TABS (Hot / Following)
+   ============================================================ */
+let activeTab = "hot";
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    activeTab = tab.dataset.tab;
+
+    $("view-hot").classList.toggle("active", activeTab === "hot");
+    $("view-following").classList.toggle("active", activeTab === "following");
+  });
+});
+
+/* ============================================================
+   FOLLOWING — Firebase rooms (real-time, sorted by listeners)
+   ============================================================ */
+const grid = $("roomsGrid");
+let allRooms = [];
+
+function renderEmpty(msg="কোনো রুম নেই।", sub="আপনি এখনো কোনো রুম ফলো করেননি।"){
+  grid.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+      <h3>${esc(msg)}</h3>
+      <p>${esc(sub)}</p>
+    </div>`;
+}
+
+function roomCardHTML(room){
+  const title     = esc(room.title || room.name || "Untitled Room");
+  const tag       = esc(room.tag   || room.category || "Room");
+  const badge     = room.badge ? `<span class="badge-top">${esc(room.badge)}</span>` : "";
+  const isLive    = room.isLive !== false;
+  const liveBadge = isLive ? `<span class="badge-live"><i class="fa-solid fa-circle"></i>LIVE</span>` : "";
+  const listeners = Number(room.listeners ?? room.users ?? 0);
+  const img       = room.image || room.cover || `https://picsum.photos/400/460?random=${encodeURIComponent(room.id)}`;
+
+  return `
+    <div class="room-card gold-frame" data-id="${esc(room.id)}">
+      <div class="card-inner">
+        <img src="${esc(img)}" alt="${title}" loading="lazy"
+             onerror="this.onerror=null;this.src='https://picsum.photos/400/460?random=${encodeURIComponent(room.id)}'">
+        <div class="card-overlay"></div>
+        <div class="card-top">${badge}${liveBadge}</div>
+        <div class="room-info">
+          <div class="room-title">${title}</div>
+          <div class="room-stats">
+            <span class="tag">${tag}</span>
+            <span class="count"><i class="fa-solid fa-droplet"></i> ${formatCount(listeners)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+const roomsQuery = query(ref(db, "rooms"), orderByChild("listeners"));
+onValue(roomsQuery, (snap) => {
+  const data = snap.val() || {};
+  allRooms = Object.entries(data)
+    .map(([id, v]) => ({ id, ...(v || {}) }))
+    .sort((a,b) => (Number(b.listeners ?? b.users ?? 0)) - (Number(a.listeners ?? a.users ?? 0)));
+
+  // Following ট্যাবে শুধু follow করা রুম
+  const list = user.following.length
+    ? allRooms.filter(r => user.following.includes(r.id))
+    : [];
+
+  if (!list.length){
+    renderEmpty("কোনো Follow রুম নেই।", "Hot ট্যাবে গিয়ে পছন্দের রুম ফলো করুন।");
+  } else {
+    grid.innerHTML = list.map(roomCardHTML).join("");
+  }
+}, (err) => {
+  console.error("Firebase error:", err);
+  renderEmpty("ডেটা লোড হয়নি।", "ইন্টারনেট চেক করুন।");
+});
+
+/* Following room click → Owner-room-like target? এখানে রুম আইডি পাস করা হয় */
+grid.addEventListener("click", (e) => {
+  const card = e.target.closest(".room-card");
+  if (!card) return;
+  const roomId = card.dataset.id;
+  if (!roomId) return;
+  location.href = `${LINKS.ownerRoom}?id=${encodeURIComponent(roomId)}`;
+});
+</script>
+
+</body>
+</html>
