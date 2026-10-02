@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOUR FM • Live Audio Room</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; user-select:none; }
+    body {
+        background: radial-gradient(circle at 50% 100%, #4a105a, #1a0b2e, #05020a);
+        display:flex; justify-content:center; align-items:center;
+        min-height:100vh; color:#fff; overflow:hidden;
+    }
+    .app-container {
+        width:100%; max-width:420px; height:100vh; max-height:850px;
+        position:relative;
+        background: url('https://www.transparenttextures.com/patterns/stardust.png');
+        background-color: rgba(26,11,46,.7); background-blend-mode:overlay;
+        overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,.9);
+        border-radius:20px; border:1px solid rgba(255,255,255,.05);
+    }
+
+    .login-overlay {
+        position:absolute; inset:0; z-index:1000;
+        background: radial-gradient(circle at 50% 40%, #2a1055, #0a0318);
+        display:flex; flex-direction:column; justify-content:center; align-items:center;
+        padding:30px; text-align:center;
+    }
+    .login-overlay.hidden { display:none; }
+    .login-cassette {
+        width:130px; height:130px; border-radius:50%;
+        background: radial-gradient(circle at 30% 30%, #2b8a40, #0f3d1c);
+        border:3px solid #F5D76E;
+        display:flex; justify-content:center; align-items:center;
+        box-shadow: 0 0 40px rgba(245,215,110,.55), inset 0 0 20px rgba(0,0,0,.7);
+        position:relative; margin-bottom:25px;
+        animation: slowSpin 8s linear infinite;
+    }
+    @keyframes slowSpin { from{transform:rotate(0);} to{transform:rotate(360deg);} }
+    .login-cassette::before {
+        content:''; position:absolute; inset:12px; border-radius:50%;
+        border:1px dashed rgba(255,255,255,.25);
+    }
+    .login-cassette i {
+        font-size:52px; color:#fff;
+        text-shadow: 0 3px 10px rgba(0,0,0,.6);
+        animation: slowSpinRev 8s linear infinite;
+    }
+    @keyframes slowSpinRev { from{transform:rotate(0);} to{transform:rotate(-360deg);} }
+    .login-title { font-size:26px; font-weight:700; color:#fff; letter-spacing:1px; margin-bottom:6px; }
+    .login-title span { color:#F5D76E; }
+    .login-sub { font-size:13px; color:#9c8fb0; margin-bottom:35px; max-width:270px; line-height:1.5; }
+    .google-btn {
+        display:flex; align-items:center; gap:12px;
+        background:#fff; color:#1f1f1f; padding:14px 26px; border-radius:50px;
+        font-size:15px; font-weight:600; border:none; cursor:pointer;
+        box-shadow: 0 6px 25px rgba(255,255,255,.15); transition:.25s;
+    }
+    .google-btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,255,255,.25); }
+    .google-btn i { font-size:20px; color:#4285F4; }
+    .login-cancel {
+        margin-top:22px; background:transparent; border:1px solid rgba(255,255,255,.2);
+        color:#bbb; padding:9px 26px; border-radius:50px; font-size:13px; cursor:pointer; transition:.25s;
+    }
+    .login-cancel:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .login-foot { position:absolute; bottom:25px; font-size:10px; color:#5a4d70; letter-spacing:.5px; }
+
+    .top-bar { display:flex; justify-content:space-between; align-items:flex-start; padding:14px 14px 8px 14px; position:relative; z-index:10; }
+    .room-info { display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; min-width:0; padding:4px 6px 4px 4px; border-radius:30px; transition:.25s; }
+    .room-info:active { background:rgba(255,255,255,.05); }
+
+    .room-logo-circle {
+        width:54px; height:54px; flex-shrink:0; border-radius:50%; position:relative;
+        background: radial-gradient(circle at 30% 30%, #2b8a40, #0f3d1c);
+        border:2px solid #F5D76E;
+        box-shadow: 0 0 14px rgba(245,215,110,.55), inset 0 0 10px rgba(0,0,0,.7);
+        overflow:hidden; display:flex; justify-content:center; align-items:center; transition:.3s;
+    }
+    .room-logo-circle::after {
+        content:''; position:absolute; inset:0; border-radius:50%;
+        background: repeating-radial-gradient(circle at center, transparent 0px, transparent 3px, rgba(255,255,255,.07) 4px, transparent 5px);
+        pointer-events:none;
+    }
+    .room-logo-circle:hover { transform:scale(1.06); box-shadow:0 0 22px rgba(245,215,110,.9), inset 0 0 10px rgba(0,0,0,.7); }
+    .room-logo-circle img { width:100%; height:100%; object-fit:cover; border-radius:50%; position:relative; z-index:1; }
+    .room-logo-circle .cassette-text {
+        font-size:9px; font-weight:700; color:#fff; text-align:center; line-height:1.1;
+        text-shadow: 0 1px 3px rgba(0,0,0,.85); position:relative; z-index:1; padding:2px;
+    }
+
+    .room-text { min-width:0; display:flex; flex-direction:column; gap:2px; }
+    .room-title-top { font-size:15px; font-weight:600; color:#fff; display:flex; align-items:center; gap:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:170px; }
+    .room-title-top i { color:#00E5FF; font-size:12px; }
+    .room-id-top { font-size:11px; color:#aaa; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:170px; }
+
+    .top-right { display:flex; align-items:center; gap:8px; }
+    .listener-group { display:flex; align-items:center; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:22px; padding:3px 12px 3px 4px; gap:6px; cursor:pointer; transition:.25s; backdrop-filter:blur(10px); }
+    .listener-group:active { background:rgba(255,255,255,.15); }
+    .listener-group:hover { border-color:rgba(245,215,110,.5); }
+    .listener-avatar-stack { position:relative; width:30px; height:30px; flex-shrink:0; }
+    .listener-avatar { width:30px; height:30px; border-radius:50%; border:1.5px solid #F5D76E; object-fit:cover; display:block; background:#333; }
+    .listener-count { font-size:12px; font-weight:600; color:#fff; min-width:10px; text-align:center; }
+    .exit-btn { width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); display:flex; justify-content:center; align-items:center; font-size:14px; color:#00E5FF; cursor:pointer; transition:.3s; flex-shrink:0; }
+    .exit-btn:hover { background:rgba(0,229,255,.18); box-shadow:0 0 10px rgba(0,229,255,.4); }
+    .exit-btn.guest { color:#F5D76E; }
+    .exit-btn.guest:hover { background:rgba(245,215,110,.18); box-shadow:0 0 10px rgba(245,215,110,.4); }
+
+    .seats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:18px 10px; padding:10px 20px; margin-top:15px; }
+    .seat { display:flex; flex-direction:column; align-items:center; }
+    .seat-avatar { width:56px; height:56px; border-radius:50%; border:2px solid #F5D76E; background:radial-gradient(circle at 30% 30%, #2a1a3e, #12081f); display:flex; justify-content:center; align-items:center; position:relative; box-shadow:inset 0 0 12px rgba(245,215,110,.15), 0 0 10px rgba(245,215,110,.25); backdrop-filter:blur(4px); cursor:pointer; transition:.25s; }
+    .seat-avatar:hover { box-shadow:0 0 18px rgba(245,215,110,.6); border-color:#fff; }
+    .seat-avatar i { font-size:22px; color:#F5D76E; text-shadow:0 2px 5px rgba(0,0,0,.5); }
+    .seat-avatar img { width:100%; height:100%; border-radius:50%; object-fit:cover; }
+    .seat-avatar.locked { border-color:#ff4d6d; box-shadow:inset 0 0 12px rgba(255,77,109,.25), 0 0 12px rgba(255,77,109,.4); }
+    .seat-avatar.locked i { color:#ff4d6d; }
+    .seat-avatar.occupied { background:radial-gradient(circle at 30% 30%, #3b2a4f, #1a0b2e); }
+    .seat-avatar.is-me { border-color:#00E5FF; box-shadow:inset 0 0 12px rgba(0,229,255,.3), 0 0 16px rgba(0,229,255,.7); }
+    .mic-badge { position:absolute; bottom:-4px; right:-4px; width:20px; height:20px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:9px; color:#fff; border:2px solid #1a0b2e; }
+    .mic-badge.on { background:#2b8a40; }
+    .mic-badge.off { background:#ff4d6d; }
+    .lock-badge { position:absolute; bottom:-4px; right:-4px; width:20px; height:20px; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:9px; color:#fff; background:#ff4d6d; border:2px solid #1a0b2e; }
+    .seat-meta { margin-top:6px; text-align:center; width:100%; }
+    .seat-number { font-size:11px; color:#aaa; font-weight:500; max-width:62px; margin:0 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .seat-number.taken { color:#F5D76E; font-weight:600; }
+    .seat-heart { font-size:10px; color:#ff4d6d; margin-top:2px; display:flex; align-items:center; justify-content:center; gap:3px; cursor:pointer; }
+
+    .rules-area { padding:0 20px; display:flex; flex-direction:column; gap:10px; margin-top:15px; }
+    .rules-box { background:rgba(15,10,25,.6); border-radius:10px; padding:12px 15px; backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.06); box-shadow:0 4px 15px rgba(0,0,0,.2); }
+    .rules-header { display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:600; color:#ccc; margin-bottom:6px; }
+    .rules-header i { color:#F5D76E; cursor:pointer; font-size:11px; background:rgba(255,255,255,.1); padding:4px; border-radius:4px; transition:.3s; }
+    .rules-text { font-size:11px; color:#00E5FF; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500; text-shadow:0 0 8px rgba(0,229,255,.3); }
+
+    .activity-strip { position:absolute; left:12px; right:12px; bottom:90px; z-index:8; pointer-events:none; display:flex; flex-direction:column-reverse; gap:4px; max-height:130px; overflow:hidden; }
+    .activity-item { background:rgba(0,0,0,.6); color:#ffdf80; font-size:11px; font-weight:500; padding:5px 12px; border-radius:14px; align-self:flex-start; animation:slideIn .3s ease; backdrop-filter:blur(6px); border:1px solid rgba(245,215,110,.25); max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-shadow:0 4px 12px rgba(0,0,0,.4); }
+    @keyframes slideIn { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+    .bottom-bar { position:absolute; bottom:0; left:0; width:100%; display:flex; justify-content:space-between; align-items:center; padding:15px 12px 25px 12px; background:linear-gradient(to top, rgba(5,0,10,.95), transparent); z-index:10; }
+    .bottom-icon { width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.05); display:flex; justify-content:center; align-items:center; font-size:16px; color:#ddd; border:1px solid rgba(255,255,255,.1); backdrop-filter:blur(5px); cursor:pointer; transition:.3s; }
+    .bottom-icon:hover { background:rgba(255,255,255,.15); color:#fff; transform:translateY(-3px); }
+    .gift-btn { width:52px; height:52px; background:linear-gradient(135deg,#a855f7,#6366f1); font-size:22px; color:#fff; box-shadow:0 0 20px rgba(168,85,247,.6), inset 0 0 10px rgba(255,255,255,.3); border:2px solid rgba(255,255,255,.4); transform:translateY(-10px); margin:0 5px; }
+    .gift-btn:hover { box-shadow:0 0 30px rgba(168,85,247,.9); transform:translateY(-12px) scale(1.05); }
+    .yellow-glow { position:absolute; bottom:-60px; right:-60px; width:220px; height:220px; background:radial-gradient(circle, rgba(255,200,0,.3) 0%, rgba(255,200,0,0) 70%); border-radius:50%; pointer-events:none; z-index:5; animation:pulse 4s infinite alternate; }
+    @keyframes pulse { 0%{transform:scale(1);opacity:.4;} 100%{transform:scale(1.3);opacity:.7;} }
+
+    .sheet-backdrop { position:absolute; inset:0; background:rgba(0,0,0,.55); z-index:150; display:none; backdrop-filter:blur(3px); animation:fadeIn .2s ease; }
+    .sheet-backdrop.active { display:block; }
+    .bottom-sheet { position:absolute; left:0; bottom:0; width:100%; z-index:160; background:rgba(15,35,35,.98); border-top-left-radius:22px; border-top-right-radius:22px; padding:10px 14px 20px 14px; transform:translateY(100%); transition:transform .28s cubic-bezier(.2,.8,.3,1); box-shadow:0 -10px 40px rgba(0,0,0,.6); border-top:1px solid rgba(255,255,255,.06); }
+    .bottom-sheet.active { transform:translateY(0); }
+    .sheet-title { text-align:center; font-size:13px; font-weight:600; color:#8fffce; padding:12px 0 8px 0; border-bottom:1px solid rgba(255,255,255,.06); margin-bottom:6px; }
+    .sheet-option { padding:16px 10px; text-align:center; font-size:15px; color:#fff; font-weight:500; cursor:pointer; border-radius:12px; transition:.2s; border-bottom:1px solid rgba(255,255,255,.05); }
+    .sheet-option:last-of-type { border-bottom:none; }
+    .sheet-option:active { background:rgba(255,255,255,.08); }
+    .sheet-option.danger { color:#ff8a9c; }
+    .sheet-cancel { margin-top:10px; background:linear-gradient(180deg,#7dffa1,#2ecc71); color:#0a1f10; font-weight:700; font-size:16px; padding:14px; border-radius:12px; text-align:center; cursor:pointer; transition:.2s; box-shadow:0 4px 14px rgba(46,204,113,.4); }
+    .sheet-cancel:active { transform:scale(.98); }
+
+    .modal-overlay { position:absolute; inset:0; background:rgba(10,5,20,.95); z-index:200; display:none; flex-direction:column; padding:20px; animation:fadeIn .3s ease; backdrop-filter:blur(10px); overflow-y:auto; }
+    .modal-overlay.active { display:flex; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .modal-header h3 { color:#fff; font-size:18px; font-weight:600; }
+    .close-btn { color:#fff; cursor:pointer; font-size:18px; background:rgba(255,255,255,.1); width:35px; height:35px; border-radius:50%; display:flex; justify-content:center; align-items:center; transition:.3s; }
+    .close-btn:hover { background:rgba(255,77,109,.3); color:#ff4d6d; }
+
+    .room-modal-top { display:flex; flex-direction:column; align-items:center; margin-bottom:20px; }
+    .room-logo-modal {
+        width:100px; height:100px; border-radius:50%; position:relative;
+        background: radial-gradient(circle at 30% 30%, #2b8a40, #0f3d1c);
+        border:3px solid #F5D76E;
+        box-shadow: 0 0 25px rgba(245,215,110,.55), inset 0 0 15px rgba(0,0,0,.7);
+        overflow:hidden; cursor:pointer; display:flex; justify-content:center; align-items:center; transition:.3s;
+    }
+    .room-logo-modal::after {
+        content:''; position:absolute; inset:0; border-radius:50%;
+        background: repeating-radial-gradient(circle at center, transparent 0px, transparent 4px, rgba(255,255,255,.07) 5px, transparent 6px);
+        pointer-events:none;
+    }
+    .room-logo-modal:hover { transform:scale(1.05); box-shadow:0 0 40px rgba(245,215,110,.9), inset 0 0 15px rgba(0,0,0,.7); }
+    .room-logo-modal img { width:100%; height:100%; object-fit:cover; border-radius:50%; position:relative; z-index:1; }
+    .room-logo-modal .cassette-text { font-size:13px; font-weight:700; color:#fff; text-align:center; line-height:1.1; text-shadow:0 2px 4px rgba(0,0,0,.85); position:relative; z-index:1; }
+
+    .room-title-modal { font-size:16px; color:#fff; font-weight:600; margin-top:12px; }
+    .room-id-modal { font-size:12px; color:#aaa; margin-top:4px; }
+
+    .owner-info-modal {
+        display:none; align-items:center; gap:10px; margin-top:14px;
+        background:rgba(245,215,110,.08); padding:8px 14px 8px 8px;
+        border-radius:30px; border:1px solid rgba(245,215,110,.35);
+    }
+    .owner-info-modal img { width:34px; height:34px; border-radius:50%; border:2px solid #F5D76E; object-fit:cover; }
+    .owner-info-modal .oi-text { display:flex; flex-direction:column; text-align:left; }
+    .owner-info-modal .oi-name { font-size:12px; color:#fff; font-weight:600; }
+    .owner-info-modal .oi-uid { font-size:10px; color:#aaa; }
+    .owner-info-modal .oi-crown { color:#ffb400; font-size:14px; margin-left:6px; }
+
+    .member-title { font-size:18px; font-weight:600; margin:15px 0 10px 0; text-align:center; }
+    .search-bar { background:rgba(255,255,255,.08); border-radius:25px; display:flex; align-items:center; padding:12px 15px; margin-bottom:10px; border:1px solid rgba(255,255,255,.05); }
+    .search-bar i { color:#aaa; margin-right:10px; }
+    .search-bar input { background:transparent; border:none; color:#fff; flex:1; outline:none; font-size:14px; }
+    .member-counter { text-align:right; color:#aaa; font-size:12px; margin-bottom:15px; padding-right:5px; }
+    .user-list { flex:1; display:flex; flex-direction:column; gap:15px; padding-bottom:20px; }
+    .user-card { display:flex; align-items:center; gap:15px; background:rgba(255,255,255,.04); padding:12px; border-radius:15px; border:1px solid rgba(255,255,255,.03); }
+    .user-avatar-box { position:relative; width:55px; height:55px; flex-shrink:0; }
+    .user-avatar { width:100%; height:100%; border-radius:50%; object-fit:cover; border:2px solid #F5D76E; }
+    .user-badge { position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); color:#000; font-size:9px; font-weight:600; padding:2px 8px; border-radius:10px; white-space:nowrap; }
+    .user-details { flex:1; min-width:0; }
+    .user-name-row { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:#fff; }
+    .user-name-row i { font-size:12px; color:#00E5FF; }
+    .user-desc { font-size:11px; color:#aaa; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .empty-msg { text-align:center; color:#777; font-size:13px; padding:30px 0; }
+
+    .listener-header-box { text-align:center; margin-bottom:20px; }
+    .listener-header-icon { width:70px; height:70px; border-radius:50%; background:linear-gradient(135deg,#a855f7,#6366f1); display:flex; justify-content:center; align-items:center; margin:0 auto 12px; box-shadow:0 0 25px rgba(168,85,247,.55); border:2px solid rgba(255,255,255,.2); }
+    .listener-header-icon i { font-size:28px; color:#fff; }
+    .listener-header-count { font-size:32px; font-weight:700; color:#fff; text-shadow:0 0 20px rgba(245,215,110,.4); }
+    .listener-header-text { font-size:12px; color:#aaa; margin-top:4px; letter-spacing:.5px; }
+    .online-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#2bff88; margin-right:5px; box-shadow:0 0 6px #2bff88; animation:onlinePulse 1.5s infinite; }
+    @keyframes onlinePulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+    .listener-user-card { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,.04); padding:10px 12px; border-radius:14px; border:1px solid rgba(255,255,255,.04); }
+    .listener-user-avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; border:2px solid #F5D76E; flex-shrink:0; }
+    .listener-user-name { font-size:13px; font-weight:600; color:#fff; display:flex; align-items:center; gap:5px; }
+    .listener-user-sub { font-size:10px; color:#8f8f9f; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .listener-user-role { font-size:9px; font-weight:600; padding:2px 7px; border-radius:8px; margin-left:auto; color:#000; }
+
+    .edit-profile-box { background:rgba(30,15,50,.95); border-radius:20px; padding:25px; border:1px solid rgba(255,255,255,.1); width:100%; max-width:350px; margin:auto; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,.5); }
+    .edit-avatar-wrap { position:relative; width:110px; height:110px; margin:0 auto 20px; }
+    .edit-avatar-container { width:100%; height:100%; border-radius:50%; overflow:hidden; border:3px solid #F5D76E; background: radial-gradient(circle at 30% 30%, #2b8a40, #0f3d1c); display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 0 20px rgba(245,215,110,.5); }
+    .edit-avatar-container img { width:100%; height:100%; object-fit:cover; border-radius:50%; }
+    .edit-avatar-container .cassette-text { font-size:14px; font-weight:700; color:#fff; text-align:center; line-height:1.1; }
+    .edit-avatar-overlay { position:absolute; bottom:0; right:0; background:#6366f1; width:34px; height:34px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:#fff; font-size:13px; border:3px solid #1a0b2e; z-index:2; cursor:pointer; }
+    .input-group { margin-bottom:15px; text-align:left; }
+    .input-group label { font-size:12px; color:#aaa; margin-bottom:5px; display:block; }
+    .input-group input { width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:12px; color:#fff; font-size:14px; outline:none; }
+    .input-group input:focus { border-color:#F5D76E; }
+    .save-btn { width:100%; background:linear-gradient(135deg,#a855f7,#6366f1); border:none; color:#fff; padding:12px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; transition:.3s; margin-top:10px; }
+    .save-btn:hover { box-shadow:0 0 15px rgba(168,85,247,.5); }
+
+    #cropModal { z-index:300; }
+    .crop-wrap { display:flex; flex-direction:column; height:100%; gap:15px; }
+    .crop-image-box { flex:1; background:#000; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; min-height:300px; }
+    .crop-image-box img { max-width:100%; max-height:100%; display:block; }
+    .crop-actions { display:flex; gap:10px; }
+    .crop-actions button { flex:1; padding:12px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; color:#fff; }
+    .crop-cancel { background:rgba(255,255,255,.1); }
+    .crop-confirm { background:linear-gradient(135deg,#a855f7,#6366f1); }
+
+    .toast-msg { position:absolute; left:50%; bottom:120px; transform:translate(-50%,20px); background:rgba(30,15,50,.96); border:1px solid rgba(245,215,110,.45); color:#fff; font-size:12px; font-weight:500; padding:10px 18px; border-radius:22px; opacity:0; pointer-events:none; transition:.3s; z-index:400; max-width:88%; text-align:center; box-shadow:0 8px 25px rgba(0,0,0,.5); }
+    .toast-msg.show { opacity:1; transform:translate(-50%,0); }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div class="login-overlay hidden" id="loginOverlay">
+        <div class="login-cassette"><i class="fa-solid fa-headphones"></i></div>
+        <div class="login-title">HOUR <span>FM</span></div>
+        <div class="login-sub">মাইকে উঠতে, সিট নিতে বা রুম এডিট করতে Google দিয়ে সাইন ইন করুন।</div>
+        <button class="google-btn" onclick="googleLogin()">
+            <i class="fa-brands fa-google"></i>
+            Sign in with Google
+        </button>
+        <button class="login-cancel" onclick="hideLogin()">পরে করবো</button>
+        <div class="login-foot">Powered by Firebase</div>
+    </div>
+
+    <div class="top-bar">
+        <div class="room-info" onclick="toggleMemberModal()">
+            <div class="room-logo-circle" id="room-logo-preview">
+                <span class="cassette-text">HOUR<br>FM</span>
+            </div>
+            <div class="room-text">
+                <div class="room-title-top">
+                    <span id="room-name-display">Loading…</span>
+                    <i class="fa-solid fa-music"></i>
+                </div>
+                <div class="room-id-top" id="room-id-display">ID:---</div>
+            </div>
+        </div>
+
+        <div class="top-right">
+            <div class="listener-group" onclick="toggleListenersModal()">
+                <div class="listener-avatar-stack">
+                    <img src="" alt="User" class="listener-avatar" id="my-avatar-top">
+                </div>
+                <div class="listener-count" id="userCountBadge">0</div>
+            </div>
+            <div class="exit-btn guest" id="authBtn" onclick="handleAuthBtn()">
+                <i class="fa-solid fa-right-to-bracket"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="seats-grid" id="seatsGrid"></div>
+
+    <div class="rules-area" id="rulesArea"></div>
+
+    <div class="activity-strip" id="activityStrip"></div>
+
+    <div class="bottom-bar">
+        <div class="bottom-icon"><i class="fa-solid fa-comment-dots"></i></div>
+        <div class="bottom-icon"><i class="fa-solid fa-face-smile"></i></div>
+        <div class="bottom-icon"><i class="fa-solid fa-microphone"></i></div>
+        <div class="bottom-icon gift-btn"><i class="fa-solid fa-gift"></i></div>
+        <div class="bottom-icon"><i class="fa-solid fa-gamepad"></i></div>
+        <div class="bottom-icon"><i class="fa-solid fa-square"></i></div>
+        <div class="bottom-icon"><i class="fa-solid fa-envelope"></i></div>
+    </div>
+
+    <div class="yellow-glow"></div>
+    <div class="toast-msg" id="toastBox"></div>
+
+    <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+    <div class="bottom-sheet" id="seatSheet">
+        <div class="sheet-title" id="sheetTitle">Seat</div>
+        <div id="sheetOptions"></div>
+        <div class="sheet-cancel" onclick="closeSheet()">Cancel</div>
+    </div>
+
+    <div class="modal-overlay" id="listenersModal">
+        <div class="modal-header">
+            <h3>Online Listeners</h3>
+            <i class="fa-solid fa-xmark close-btn" onclick="closeModal('listenersModal')"></i>
+        </div>
+        <div class="listener-header-box">
+            <div class="listener-header-icon"><i class="fa-solid fa-headphones"></i></div>
+            <div class="listener-header-count" id="listenerTotalCount">0</div>
+            <div class="listener-header-text"><span class="online-dot"></span> এখন অনলাইনে আছেন</div>
+        </div>
+        <div class="user-list" id="listenerList"></div>
+    </div>
+
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal-header">
+            <h3>Room Info</h3>
+            <i class="fa-solid fa-xmark close-btn" onclick="closeModal('memberModal')"></i>
+        </div>
+        <div class="room-modal-top">
+            <div class="room-logo-modal" id="room-logo-modal-container" onclick="openEditRoom()">
+                <span class="cassette-text">HOUR<br>FM</span>
+            </div>
+            <div class="room-title-modal" id="room-name-modal-display">Loading…</div>
+            <div class="room-id-modal" id="room-id-modal">ID:---</div>
+            <div class="owner-info-modal" id="owner-info-modal"></div>
+        </div>
+        <div class="member-title">Member</div>
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="memberSearch" placeholder="নাম বা UID খুঁজুন" oninput="renderMembers()">
+            <i class="fa-solid fa-xmark" style="font-size:12px; cursor:pointer;" onclick="clearSearch()"></i>
+        </div>
+        <div class="member-counter" id="memberCounter">0/4000</div>
+        <div class="user-list" id="userList"></div>
+    </div>
+
+    <div class="modal-overlay" id="editRoomModal">
+        <div class="edit-profile-box">
+            <div class="modal-header">
+                <h3>Edit Room Profile</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="closeModal('editRoomModal')"></i>
+            </div>
+            <div class="edit-avatar-wrap">
+                <div class="edit-avatar-container" onclick="document.getElementById('roomImageUpload').click()">
+                    <div id="room-logo-edit-preview" style="width:100%;height:100%;display:flex;justify-content:center;align-items:center;">
+                        <span class="cassette-text">HOUR<br>FM</span>
+                    </div>
+                </div>
+                <div class="edit-avatar-overlay" onclick="document.getElementById('roomImageUpload').click()">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+            </div>
+            <input type="file" id="roomImageUpload" accept="image/*" style="display:none;" onchange="previewRoomImage(event)">
+
+            <div class="input-group">
+                <label>Room Name</label>
+                <input type="text" id="roomNameInput" value="HOUR FM" placeholder="Enter room name" maxlength="24">
+            </div>
+            <div class="input-group">
+                <label>Room ID</label>
+                <input type="text" id="roomIdInput" value="" disabled style="opacity:.5; cursor:not-allowed;">
+            </div>
+            <button class="save-btn" onclick="saveRoomProfile()">Save Changes</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cropModal">
+        <div class="crop-wrap">
+            <div class="modal-header">
+                <h3>ছবি ক্রপ করুন</h3>
+                <i class="fa-solid fa-xmark close-btn" onclick="cancelCrop()"></i>
+            </div>
+            <div class="crop-image-box"><img id="cropImage" alt=""></div>
+            <div class="crop-actions">
+                <button class="crop-cancel" onclick="cancelCrop()">বাতিল</button>
+                <button class="crop-confirm" onclick="applyCrop()">ক্রপ করে ব্যবহার করুন</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {
+    getDatabase, ref, onValue, set, update, remove, get,
+    onDisconnect, push, query, limitToLast, runTransaction
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import {
+    getAuth, GoogleAuthProvider, signInWithPopup,
+    onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCTn3QEYtRMxm7Y91RSFSvbRJSRHcXMEdI",
+    authDomain: "room-7fbf7.firebaseapp.com",
+    databaseURL: "https://room-7fbf7-default-rtdb.firebaseio.com",
+    projectId: "room-7fbf7",
+    storageBucket: "room-7fbf7.firebasestorage.app",
+    messagingSenderId: "417946695868",
+    appId: "1:417946695868:web:34c6f63269aaf659b2b8b9"
+};
+const app  = initializeApp(firebaseConfig);
+const db   = getDatabase(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
+function resolveRoomId() {
+    const params = new URLSearchParams(location.search);
+    const hash   = location.hash.replace(/^#\/?/, '');
+    return params.get('room')
+        || params.get('id')
+        || params.get('roomId')
+        || hash
+        || null;
+}
+const ROOM_ID = resolveRoomId();
+const BASE    = ROOM_ID ? `rooms/${ROOM_ID}` : null;
+console.log('%c🎧 Room ID:', 'color:#F5D76E;font-weight:bold;', ROOM_ID);
+
+if (!ROOM_ID) {
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                  height:100vh;background:radial-gradient(circle at 50% 100%,#4a105a,#1a0b2e,#05020a);
+                  color:#fff;font-family:'Poppins',sans-serif;padding:30px;text-align:center;gap:18px;">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:52px;color:#F5D76E;
+            text-shadow:0 0 20px rgba(245,215,110,.6);"></i>
+        <h2 style="font-size:20px;font-weight:600;">রুম আইডি পাওয়া যায়নি</h2>
+        <p style="color:#aaa;max-width:300px;line-height:1.6;font-size:13px;">
+          অনুগ্রহ করে হোম পেজ থেকে আপনার রুমে প্রবেশ করুন।
+        </p>
+        <a href="https://farjanaaktar1173-boop.github.io/Homepage/"
+           style="padding:13px 32px;border-radius:50px;
+                  background:linear-gradient(135deg,#a855f7,#6366f1);
+                  color:#fff;text-decoration:none;font-weight:600;font-size:14px;
+                  box-shadow:0 6px 20px rgba(168,85,247,.5);">
+          <i class="fa-solid fa-house" style="margin-right:8px;"></i>হোম পেজে যান
+        </a>
+      </div>`;
+    throw new Error('No room ID');
+}
+
+const state = {
+    roomName : 'HOUR FM',
+    roomId   : ROOM_ID,
+    roomLogo : null,
+    owner    : null,
+    seats    : new Array(10).fill(null),
+    listeners: [],
+    rules    : ['🎧FM 📻➡️SP ✨🎤Room 🎵']
+};
+
+let myProfile = null;
+let joined   = false;
+let pendingLogo = null;
+let cropper = null;
+let myListenerRef = null;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const GUEST_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="50" fill="#3b2a4f"/>
+        <circle cx="50" cy="40" r="18" fill="#7a6a8f"/>
+        <ellipse cx="50" cy="88" rx="30" ry="22" fill="#7a6a8f"/>
+    </svg>`
+);
+
+window.showLogin = function() { $('loginOverlay').classList.remove('hidden'); };
+window.hideLogin = function() { $('loginOverlay').classList.add('hidden'); };
+
+window.googleLogin = async function() {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        console.log('Logged in:', result.user.displayName);
+        hideLogin();
+    } catch (e) {
+        console.error(e);
+        toastMsg('লগইন ব্যর্থ: ' + (e.code || e.message));
+    }
+};
+
+window.handleAuthBtn = function() {
+    if (myProfile) {
+        exitRoom();
+    } else {
+        showLogin();
+    }
+};
+
+function requireLogin() {
+    if (!myProfile) {
+        toastMsg('এই কাজটির জন্য লগইন করুন');
+        showLogin();
+        return false;
+    }
+    return true;
+}
+
+onAuthStateChanged(auth, async user => {
+    if (user) {
+        let name    = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+        let avatar  = user.photoURL || 'https://i.pravatar.cc/150?img=12';
+        let moiId   = '';
+        let country = '';
+        let voice   = '';
+
+        try {
+            const snap = await get(ref(db, 'users/' + user.uid));
+            if (snap.exists()) {
+                const u = snap.val();
+                name    = u.name    || name;
+                avatar  = u.photo   || avatar;
+                moiId   = u.moiId   || '';
+                country = u.country || '';
+                voice   = u.voice   || '';
+            }
+        } catch(e) {
+            console.warn('user profile fetch error:', e);
+        }
+
+        myProfile = {
+            uid     : user.uid,
+            name,
+            avatar,
+            email   : user.email || '',
+            moiId,
+            country,
+            voice
+        };
+
+        $('my-avatar-top').src = myProfile.avatar;
+        const btn = $('authBtn');
+        btn.classList.remove('guest');
+        btn.innerHTML = '<i class="fa-solid fa-power-off"></i>';
+        hideLogin();
+
+        if (!joined) {
+            joined = true;
+            joinRoom();
+        }
+    } else {
+        myProfile = null;
+        joined   = false;
+        $('my-avatar-top').src = GUEST_AVATAR;
+        const btn = $('authBtn');
+        btn.classList.add('guest');
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i>';
+    }
+});
+
+function joinRoom() {
+    if (!myProfile) return;
+
+    myListenerRef = ref(db, `${BASE}/listeners/${myProfile.uid}`);
+    set(myListenerRef, {
+        uid    : myProfile.uid,
+        name   : myProfile.name,
+        avatar : myProfile.avatar,
+        email  : myProfile.email,
+        moiId  : myProfile.moiId || '',
+        joined : Date.now()
+    });
+    onDisconnect(myListenerRef).remove();
+
+    const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+    if (idx > -1) {
+        const seatRef = ref(db, `${BASE}/seats/${idx}`);
+        set(seatRef, {
+            uid   : myProfile.uid,
+            name  : myProfile.name,
+            avatar: myProfile.avatar,
+            mic   : state.seats[idx].mic ?? true,
+            locked: state.seats[idx].locked ?? false,
+            hearts: state.seats[idx].hearts || 0,
+            started: Date.now()
+        });
+        onDisconnect(seatRef).remove();
+    }
+
+    logActivity('join', null);
+}
+
+window.addEventListener('beforeunload', () => {
+    if (!myProfile) return;
+    const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+    if (idx > -1) remove(ref(db, `${BASE}/seats/${idx}`));
+});
+
+onValue(ref(db, `${BASE}/listeners`), snap => {
+    const data = snap.val() || {};
+    state.listeners = Object.values(data).sort((a,b) => a.joined - b.joined);
+    $('userCountBadge').textContent = state.listeners.length;
+    $('listenerTotalCount').textContent = state.listeners.length;
+    renderListeners();
+    renderMembers();
+});
+
+onValue(ref(db, `${BASE}/seats`), snap => {
+    const data = snap.val() || {};
+    state.seats = Array.from({length:10}, (_, i) => data[i] || null);
+    renderSeats();
+});
+
+onValue(ref(db, `${BASE}/info`), snap => {
+    const data = snap.val();
+    if (data) {
+        state.roomName = data.name || 'HOUR FM';
+        state.roomLogo = data.logo || null;
+        state.roomId   = data.id   || ROOM_ID;
+        state.owner    = data.owner || null;
+    } else {
+        state.roomName = 'HOUR FM';
+        state.roomLogo = null;
+        state.roomId   = ROOM_ID;
+        state.owner    = null;
+    }
+    renderBranding();
+});
+
+let lastActTs = 0;
+onValue(query(ref(db, `${BASE}/activity`), limitToLast(1)), snap => {
+    const data = snap.val();
+    if (!data) return;
+    const [ , latest ] = Object.entries(data)[0];
+    if (!latest || latest.ts <= lastActTs) return;
+    if (latest.uid === myProfile?.uid) { lastActTs = latest.ts; return; }
+    lastActTs = latest.ts;
+    showActivity(latest);
+});
+
+function logActivity(action, seat, extra = {}) {
+    if (!myProfile) return;
+    const payload = {
+        uid   : myProfile.uid,
+        name  : myProfile.name,
+        avatar: myProfile.avatar,
+        action, seat, ts: Date.now(),
+        ...extra
+    };
+    push(ref(db, `${BASE}/activity`), payload);
+    lastActTs = payload.ts;
+    showActivity({ ...payload, self:true });
+}
+
+function showActivity(a) {
+    const ICONS = {
+        takeMic:'🎤', leaveMic:'🚪', lockMic:'🔒', unlockMic:'🔓',
+        mute:'🔇', unmute:'🔊', heart:'❤️', join:'👋', leave:'👋',
+        roomEdit:'✏️'
+    };
+    const LABELS = {
+        takeMic:'মাইকে উঠেছেন সিট', leaveMic:'সিট ছেড়েছেন',
+        lockMic:'সিট লক করেছেন',   unlockMic:'সিট আনলক করেছেন',
+        mute:'মিউট করলেন',         unmute:'আনমিউট করলেন',
+        heart:'হার্ট দিলেন সিট',    join:'রুমে ঢুকলেন',
+        leave:'রুম ছাড়লেন',        roomEdit:'রুম প্রোফাইল বদলালেন'
+    };
+    const icon = ICONS[a.action] || '✨';
+    const lbl  = LABELS[a.action] || a.action;
+    const seatTxt = (a.seat !== undefined && a.seat !== null) ? ` #${a.seat + 1}` : '';
+
+    const el = document.createElement('div');
+    el.className = 'activity-item';
+    el.innerHTML = `<span style="margin-right:5px;">${icon}</span>${esc(a.name)} ${esc(lbl)}${seatTxt}`;
+    $('activityStrip').appendChild(el);
+
+    setTimeout(() => {
+        el.style.transition = 'opacity .4s, transform .4s';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-6px)';
+        setTimeout(() => el.remove(), 400);
+    }, 5000);
+
+    while ($('activityStrip').children.length > 5) {
+        $('activityStrip').firstChild.remove();
+    }
+}
+
+function brandInner() {
+    if (state.roomLogo) return `<img src="${state.roomLogo}" alt="">`;
+    const parts = esc(state.roomName || 'HOUR FM').split(/\s+/).slice(0, 2).join('<br>');
+    return `<span class="cassette-text">${parts}</span>`;
+}
+
+function renderBranding() {
+    $('room-logo-preview').innerHTML = brandInner();
+    $('room-name-display').textContent = state.roomName;
+    $('room-id-display').textContent   = 'ID:' + state.roomId;
+
+    $('room-logo-modal-container').innerHTML = brandInner();
+    $('room-name-modal-display').textContent = state.roomName;
+    $('room-id-modal').textContent = 'ID:' + state.roomId;
+
+    const oi = $('owner-info-modal');
+    if (state.owner && state.owner.name) {
+        oi.style.display = 'flex';
+        oi.innerHTML = `
+            <img src="${state.owner.avatar || GUEST_AVATAR}" alt="">
+            <div class="oi-text">
+                <div class="oi-name">${esc(state.owner.name)}</div>
+                <div class="oi-uid">UID: ${esc(state.owner.uid || '-')}</div>
+            </div>
+            <i class="fa-solid fa-crown oi-crown"></i>
+        `;
+    } else {
+        oi.style.display = 'none';
+    }
+}
+
+function renderSeats() {
+    $('seatsGrid').innerHTML = state.seats.map((s, i) => {
+        let inner, cls = 'seat-avatar', badge = '';
+        if (!s) {
+            inner = `<i class="fa-solid fa-couch"></i>`;
+        } else if (s.locked && !s.uid) {
+            cls += ' locked';
+            inner = `<i class="fa-solid fa-lock"></i>`;
+        } else {
+            cls += ' occupied';
+            if (myProfile && s.uid === myProfile.uid) cls += ' is-me';
+            inner = `<img src="${s.avatar || GUEST_AVATAR}" alt="">`;
+            if (s.locked) {
+                badge = `<span class="lock-badge"><i class="fa-solid fa-lock"></i></span>`;
+            } else {
+                badge = `<span class="mic-badge ${s.mic ? 'on' : 'off'}">
+                            <i class="fa-solid fa-microphone${s.mic ? '' : '-slash'}"></i>
+                        </span>`;
+            }
+        }
+        const label = s && s.name ? esc(s.name) : (s && s.locked ? 'Locked' : (i + 1));
+        const hearts = (s && s.hearts) ? s.hearts : 0;
+
+        return `
+            <div class="seat">
+                <div class="${cls}" onclick="openSeatSheet(${i})">${inner}${badge}</div>
+                <div class="seat-meta">
+                    <div class="seat-number ${s && s.name ? 'taken' : ''}">${label}</div>
+                    <div class="seat-heart" onclick="giveHeart(${i}, event)">
+                        <i class="fa-solid fa-heart"></i> ${hearts}
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+let activeSeatIndex = -1;
+window.openSeatSheet = function(i) {
+    if (!requireLogin()) return;
+    activeSeatIndex = i;
+    const s = state.seats[i];
+    let title, options;
+
+    if (!s) {
+        title = `${i + 1} নম্বর সিট`;
+        options = [
+            { label:'Take the mic',        action:() => takeMic(i) },
+            { label:'Invite to be on mic', action:() => logActivity('join', i, { name:'Invite' }) },
+            { label:'Lock the mic',        action:() => lockMic(i) },
+            { label:'Mute',                action:() => logActivity('mute', i) }
+        ];
+    } else if (s.locked && !s.uid) {
+        title = `${i + 1} নম্বর সিট • লক করা`;
+        options = [
+            { label:'Take the mic',   action:() => takeMic(i) },
+            { label:'Unlock the mic', action:() => unlockMic(i) },
+            { label:'Mute',           action:() => logActivity('mute', i) }
+        ];
+    } else if (s.uid === myProfile.uid) {
+        title = `আপনার সিট • ${s.name}`;
+        options = [
+            { label: s.mic ? 'Mute' : 'Unmute', action:() => toggleMyMic(i) },
+            { label:'Lock the mic',  action:() => lockMic(i) },
+            { label:'Leave mic',     action:() => leaveMic(i), danger:true }
+        ];
+    } else {
+        title = `${esc(s.name)} • ${i + 1} নম্বর সিট`;
+        options = [
+            { label:'Mute',          action:() => logActivity('mute', i, { target:s.name }) },
+            { label:'Lock the mic',  action:() => lockMic(i) },
+            { label:'Kick from mic', action:() => kickSeat(i, s.name), danger:true }
+        ];
+    }
+
+    $('sheetTitle').textContent = title;
+    $('sheetOptions').innerHTML = options.map((o,k) =>
+        `<div class="sheet-option ${o.danger?'danger':''}" data-k="${k}">${o.label}</div>`
+    ).join('');
+    $('sheetOptions').querySelectorAll('.sheet-option').forEach(el => {
+        el.addEventListener('click', () => options[+el.dataset.k].action());
+    });
+
+    $('sheetBackdrop').classList.add('active');
+    $('seatSheet').classList.add('active');
+};
+
+window.closeSheet = function() {
+    $('sheetBackdrop').classList.remove('active');
+    $('seatSheet').classList.remove('active');
+    activeSeatIndex = -1;
+};
+
+async function takeMic(i) {
+    if (!requireLogin()) return;
+    const oldIdx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+    if (oldIdx > -1 && oldIdx !== i) {
+        await remove(ref(db, `${BASE}/seats/${oldIdx}`));
+    }
+    const prev = state.seats[i] || {};
+    const seatRef = ref(db, `${BASE}/seats/${i}`);
+    await set(seatRef, {
+        uid    : myProfile.uid,
+        name   : myProfile.name,
+        avatar : myProfile.avatar,
+        mic    : true,
+        locked : false,
+        hearts : prev.hearts || 0,
+        started: Date.now()
+    });
+    onDisconnect(seatRef).remove();
+    logActivity('takeMic', i);
+    closeSheet();
+}
+
+async function leaveMic(i) {
+    const s = state.seats[i];
+    if (!s || s.uid !== myProfile.uid) return;
+    await remove(ref(db, `${BASE}/seats/${i}`));
+    logActivity('leaveMic', i);
+    closeSheet();
+}
+
+async function toggleMyMic(i) {
+    const s = state.seats[i];
+    if (!s || s.uid !== myProfile.uid) return;
+    const newMic = !s.mic;
+    await update(ref(db, `${BASE}/seats/${i}`), { mic: newMic });
+    logActivity(newMic ? 'unmute' : 'mute', i);
+    closeSheet();
+}
+
+async function lockMic(i) {
+    const s = state.seats[i];
+    if (!s) {
+        await set(ref(db, `${BASE}/seats/${i}`), { locked:true, by: myProfile.name });
+    } else {
+        await update(ref(db, `${BASE}/seats/${i}`), { locked:true });
+    }
+    logActivity('lockMic', i);
+    closeSheet();
+}
+
+async function unlockMic(i) {
+    const s = state.seats[i];
+    if (!s || !s.locked) return;
+    if (s.uid) {
+        await update(ref(db, `${BASE}/seats/${i}`), { locked:false });
+    } else {
+        await remove(ref(db, `${BASE}/seats/${i}`));
+    }
+    logActivity('unlockMic', i);
+    closeSheet();
+}
+
+async function kickSeat(i, targetName) {
+    await remove(ref(db, `${BASE}/seats/${i}`));
+    logActivity('leaveMic', i, { name: targetName, kicked:true });
+    closeSheet();
+}
+
+window.giveHeart = async function(i, e) {
+    e.stopPropagation();
+    if (!requireLogin()) return;
+    const s = state.seats[i];
+    if (!s || !s.uid) return;
+    await runTransaction(ref(db, `${BASE}/seats/${i}/hearts`), h => (h || 0) + 1);
+    logActivity('heart', i);
+};
+
+function renderListeners() {
+    $('listenerList').innerHTML = state.listeners.length
+        ? state.listeners.map(u => {
+            const isMe = myProfile && u.uid === myProfile.uid;
+            return `
+                <div class="listener-user-card">
+                    <img src="${u.avatar || GUEST_AVATAR}" class="listener-user-avatar" alt="">
+                    <div style="flex:1; min-width:0;">
+                        <div class="listener-user-name">
+                            ${esc(u.name)}
+                            ${isMe ? '<i class="fa-solid fa-crown" style="color:#ffb400;"></i>' : ''}
+                        </div>
+                        <div class="listener-user-sub">${esc(u.email || u.uid)}</div>
+                    </div>
+                    <span class="listener-user-role" style="background:${isMe?'#ffb400':'#3b82f6'};">
+                        ${isMe ? 'You' : 'Listener'}
+                    </span>
+                </div>`;
+        }).join('')
+        : `<div class="empty-msg">এখনো কেউ অনলাইনে নেই</div>`;
+}
+
+window.renderMembers = function() {
+    const q = ($('memberSearch').value || '').trim().toLowerCase();
+    const list = state.listeners.filter(u =>
+        (u.name || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q) ||
+        u.uid.toLowerCase().includes(q)
+    );
+    $('userList').innerHTML = list.length
+        ? list.map(u => {
+            const isMe = myProfile && u.uid === myProfile.uid;
+            return `
+                <div class="user-card">
+                    <div class="user-avatar-box">
+                        <img src="${u.avatar || GUEST_AVATAR}" class="user-avatar" alt="">
+                        <div class="user-badge" style="background:${isMe?'#ffb400':'#3b82f6'};">
+                            ${isMe ? 'You' : 'Listener'}
+                        </div>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name-row">${esc(u.name)} <i class="fa-solid fa-star"></i></div>
+                        <div class="user-desc">${esc(u.email || u.uid)}</div>
+                    </div>
+                    <i class="fa-solid fa-user" style="color:#00E5FF;font-size:18px;"></i>
+                </div>`;
+        }).join('')
+        : `<div class="empty-msg">কোনো মেম্বার পাওয়া যায়নি</div>`;
+    $('memberCounter').textContent = `${state.listeners.length}/4000`;
+};
+
+window.clearSearch = function() {
+    $('memberSearch').value = '';
+    renderMembers();
+};
+
+window.closeModal = function(id) { $(id).classList.remove('active'); };
+window.toggleMemberModal = function() {
+    const m = $('memberModal');
+    m.classList.contains('active') ? closeModal('memberModal') : m.classList.add('active');
+};
+window.toggleListenersModal = function() {
+    const m = $('listenersModal');
+    m.classList.contains('active') ? closeModal('listenersModal') : m.classList.add('active');
+};
+
+window.openEditRoom = function() {
+    if (!requireLogin()) return;
+    pendingLogo = state.roomLogo;
+    $('roomNameInput').value = state.roomName;
+    $('roomIdInput').value   = state.roomId;
+
+    const preview = $('room-logo-edit-preview');
+    if (state.roomLogo) {
+        preview.innerHTML = `<img src="${state.roomLogo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    } else {
+        preview.innerHTML = `<span class="cassette-text">${esc(state.roomName).split(/\s+/).slice(0,2).join('<br>')}</span>`;
+    }
+    $('editRoomModal').classList.add('active');
+};
+
+window.previewRoomImage = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        $('cropImage').src = ev.target.result;
+        $('cropModal').classList.add('active');
+        if (cropper) { cropper.destroy(); cropper = null; }
+        setTimeout(() => {
+            cropper = new Cropper($('cropImage'), {
+                aspectRatio:1, viewMode:1, autoCropArea:1,
+                background:false, guides:false, center:false,
+                highlight:false, responsive:true, restore:false,
+                checkCrossOrigin:false, dragMode:'move',
+                movable:true, zoomable:true, rotatable:false, scalable:false
+            });
+        }, 120);
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+};
+
+window.cancelCrop = function() {
+    if (cropper) { cropper.destroy(); cropper = null; }
+    closeModal('cropModal');
+};
+
+window.applyCrop = function() {
+    if (!cropper) return;
+    const canvas = cropper.getCroppedCanvas({ width:300, height:300, imageSmoothingQuality:'high' });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    pendingLogo = dataUrl;
+    const preview = $('room-logo-edit-preview');
+    preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    cropper.destroy(); cropper = null;
+    closeModal('cropModal');
+};
+
+window.saveRoomProfile = async function() {
+    if (!requireLogin()) return;
+    const name = $('roomNameInput').value.trim();
+    if (!name) { toastMsg('রুমের নাম খালি রাখা যাবে না'); return; }
+
+    let existingData = {};
+    try {
+        const s = await get(ref(db, `${BASE}/info`));
+        existingData = s.val() || {};
+    } catch(e) {}
+
+    const owner = existingData.owner || {
+        uid   : myProfile.uid,
+        name  : myProfile.name,
+        avatar: myProfile.avatar
+    };
+
+    await set(ref(db, `${BASE}/info`), {
+        name,
+        logo: pendingLogo || null,
+        id: ROOM_ID,
+        country: existingData.country || 'Unknown',
+        owner,
+        createdAt: existingData.createdAt || Date.now(),
+        updatedAt: Date.now(),
+        updatedBy: myProfile?.name || 'Unknown'
+    });
+    logActivity('roomEdit', null);
+    closeModal('editRoomModal');
+};
+
+window.exitRoom = async function() {
+    if (!confirm('সাইন আউট করতে চান?')) return;
+    if (myProfile) {
+        const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+        if (idx > -1) await remove(ref(db, `${BASE}/seats/${idx}`));
+        if (myListenerRef) await remove(myListenerRef);
+    }
+    await signOut(auth);
+    try { localStorage.removeItem('moi_user'); } catch(e){}
+    location.reload();
+};
+
+function renderRules() {
+    $('rulesArea').innerHTML = state.rules.map(r => `
+        <div class="rules-box">
+            <div class="rules-header"><span>Rules</span><i class="fa-solid fa-pen"></i></div>
+            <div class="rules-text">${esc(r)}</div>
+        </div>`).join('');
+}
+
+let toastTimer;
+function toastMsg(msg) {
+    const t = $('toastBox');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+window.toastMsg = toastMsg;
+
+$('roomIdInput').value = ROOM_ID;
+$('my-avatar-top').src = GUEST_AVATAR;
+renderBranding();
+renderSeats();
+renderRules();
+renderMembers();
+renderListeners();
+
+console.log('%c🎧 HOUR FM • Firebase Live • Room: ' + ROOM_ID, 'color:#00E5FF;font-size:14px;font-weight:bold;');
+</script>
+
+</body>
+</html>
