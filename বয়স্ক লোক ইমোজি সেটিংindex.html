@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HOUR FM • Live Audio Room</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;user-select:none}
+input,textarea{user-select:text;-webkit-user-select:text}
+body{background:radial-gradient(circle at 50% 100%,#4a105a,#1a0b2e,#05020a);display:flex;justify-content:center;align-items:center;min-height:100vh;color:#fff;overflow:hidden}
+.app-container{width:100%;max-width:420px;height:100vh;max-height:850px;position:relative;background:url('https://www.transparenttextures.com/patterns/stardust.png');background-color:rgba(26,11,46,.7);background-blend-mode:overlay;overflow:hidden;box-shadow:0 0 50px rgba(0,0,0,.9);border-radius:20px;border:1px solid rgba(255,255,255,.05)}
+.login-overlay{position:absolute;inset:0;z-index:1000;background:radial-gradient(circle at 50% 40%,#2a1055,#0a0318);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:30px;text-align:center}
+.login-overlay.hidden{display:none}
+.login-cassette{width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#2b8a40,#0f3d1c);border:3px solid #F5D76E;display:flex;justify-content:center;align-items:center;box-shadow:0 0 40px rgba(245,215,110,.55);position:relative;margin-bottom:25px;animation:slowSpin 8s linear infinite}
+@keyframes slowSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.login-cassette i{font-size:52px;color:#fff;animation:slowSpinRev 8s linear infinite}
+@keyframes slowSpinRev{from{transform:rotate(0)}to{transform:rotate(-360deg)}}
+.login-title{font-size:26px;font-weight:700;color:#fff;margin-bottom:6px}
+.login-title span{color:#F5D76E}
+.login-sub{font-size:13px;color:#9c8fb0;margin-bottom:35px;max-width:270px;line-height:1.5}
+.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1f1f1f;padding:14px 26px;border-radius:50px;font-size:15px;font-weight:600;border:none;cursor:pointer;box-shadow:0 6px 25px rgba(255,255,255,.15)}
+.login-cancel{margin-top:22px;background:transparent;border:1px solid rgba(255,255,255,.2);color:#bbb;padding:9px 26px;border-radius:50px;font-size:13px;cursor:pointer}
+.top-bar{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 12px 6px 12px;position:relative;z-index:10;gap:6px}
+.room-info{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:0;padding:4px;border-radius:30px}
+.room-info:active{background:rgba(255,255,255,.05)}
+.room-logo-circle{width:50px;height:50px;flex-shrink:0;border-radius:50%;position:relative;background:radial-gradient(circle at 30% 30%,#2b8a40,#0f3d1c);border:2px solid #F5D76E;box-shadow:0 0 14px rgba(245,215,110,.55);overflow:hidden;display:flex;justify-content:center;align-items:center}
+.room-logo-circle::after{content:'';position:absolute;inset:0;border-radius:50%;background:repeating-radial-gradient(circle at center,transparent 0,transparent 3px,rgba(255,255,255,.07) 4px,transparent 5px);pointer-events:none}
+.room-logo-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%;position:relative;z-index:1}
+.room-logo-circle .cassette-text{font-size:9px;font-weight:700;color:#fff;text-align:center;line-height:1.1;position:relative;z-index:1;padding:2px}
+.room-text{min-width:0;display:flex;flex-direction:column;gap:3px}
+.room-title-top{font-size:14px;font-weight:600;color:#fff;display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.room-title-top i{color:#00E5FF;font-size:12px}
+.room-points{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:14px;background:linear-gradient(135deg,rgba(245,215,110,.22),rgba(212,175,55,.12));border:1px solid rgba(245,215,110,.55);font-size:12px;font-weight:800;color:#fff8dc;width:fit-content;box-shadow:0 0 10px rgba(245,215,110,.3)}
+.room-points i.trophy{font-size:11px;color:#F5D76E}
+.room-points i.gem{font-size:9px;color:#7dd3fc}
+.top-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.listener-group{display:flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:3px 10px 3px 3px;gap:5px;cursor:pointer}
+.listener-avatar-stack{width:28px;height:28px;flex-shrink:0}
+.listener-avatar{width:28px;height:28px;border-radius:50%;border:1.5px solid #F5D76E;object-fit:cover;display:block;background:#333}
+.listener-count{font-size:11px;font-weight:600;color:#fff;min-width:10px;text-align:center}
+.exit-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;justify-content:center;align-items:center;font-size:13px;color:#00E5FF;cursor:pointer}
+.exit-btn.guest{color:#F5D76E}
+.seats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px 4px;padding:10px 10px;margin-top:14px;width:100%;box-sizing:border-box}
+.seat{display:flex;flex-direction:column;align-items:center;position:relative;min-width:0;max-width:100%}
+.seat-avatar{width:100%;max-width:54px;aspect-ratio:1/1;border-radius:50%;border:2px solid #F5D76E;background:radial-gradient(circle at 30% 30%,#2a1a3e,#12081f);display:flex;justify-content:center;align-items:center;position:relative;box-shadow:inset 0 0 12px rgba(245,215,110,.15),0 0 10px rgba(245,215,110,.25);cursor:pointer;transition:.25s}
+.seat-avatar i{font-size:20px;color:#F5D76E}
+.seat-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.seat-avatar.locked{border-color:#ff4d6d;box-shadow:inset 0 0 12px rgba(255,77,109,.25),0 0 12px rgba(255,77,109,.4)}
+.seat-avatar.locked i{color:#ff4d6d}
+.seat-avatar.occupied{background:radial-gradient(circle at 30% 30%,#3b2a4f,#1a0b2e)}
+.seat-avatar.is-me{border-color:#00E5FF;box-shadow:inset 0 0 12px rgba(0,229,255,.3),0 0 16px rgba(0,229,255,.7)}
+.seat-avatar.is-owner{border-color:#F5D76E;box-shadow:inset 0 0 12px rgba(245,215,110,.4),0 0 18px rgba(245,215,110,.85)}
+.seat-avatar.is-admin{border-color:#22c55e;box-shadow:inset 0 0 12px rgba(34,197,94,.35),0 0 16px rgba(34,197,94,.75)}
+.mic-badge{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:8px;color:#fff;border:2px solid #1a0b2e;z-index:4}
+.mic-badge.on{background:#2b8a40}
+.mic-badge.off{background:#ff4d6d;box-shadow:0 0 8px rgba(255,77,109,.7)}
+.lock-badge{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:8px;color:#fff;background:#ff4d6d;border:2px solid #1a0b2e;z-index:4}
+.role-badge-seat{position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:9px;color:#1a1405;border:2px solid #1a0b2e;z-index:5}
+.role-badge-seat.owner{background:linear-gradient(135deg,#fff8dc,#d4af37);box-shadow:0 0 10px rgba(245,215,110,.9)}
+.role-badge-seat.admin{background:linear-gradient(135deg,#4ade80,#16a34a);color:#fff;box-shadow:0 0 10px rgba(34,197,94,.9)}
+.seat-meta{margin-top:5px;text-align:center;width:100%;min-width:0}
+.seat-number{font-size:10px;color:#aaa;font-weight:500;max-width:100%;margin:0 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat-number.taken{color:#F5D76E;font-weight:600}
+.seat-coins{font-size:9px;color:#7dd3fc;margin-top:2px;display:flex;align-items:center;justify-content:center;gap:2px;font-weight:600}
+.seat-coins i{font-size:8px}
+/* ==== SEAT REACTION (emoji over avatar) ==== */
+.seat-reaction-layer{position:absolute;top:0;left:50%;transform:translateX(-50%);width:80px;height:0;pointer-events:none;z-index:60}
+.seat-react{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:34px;height:34px;object-fit:contain;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;filter:drop-shadow(0 3px 8px rgba(0,0,0,.8)) drop-shadow(0 0 10px rgba(255,215,110,.6));animation:reactFloat 2.8s cubic-bezier(.2,.8,.3,1) forwards;will-change:transform,opacity}
+@keyframes reactFloat{0%{opacity:0;transform:translateX(-50%) translateY(12px) scale(.2) rotate(-25deg)}12%{opacity:1;transform:translateX(-50%) translateY(-6px) scale(1.35) rotate(6deg)}28%{opacity:1;transform:translateX(-50%) translateY(-14px) scale(1) rotate(-4deg)}55%{opacity:1;transform:translateX(-50%) translateY(-26px) scale(1.05) rotate(2deg)}100%{opacity:0;transform:translateX(-50%) translateY(-58px) scale(.65) rotate(0)}}
+.seat-react-burst{position:absolute;top:50%;left:50%;width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,210,74,.85);transform:translate(-50%,-50%) scale(.3);pointer-events:none;animation:reactBurst 1s cubic-bezier(.2,.8,.3,1) forwards;z-index:55}
+@keyframes reactBurst{0%{transform:translate(-50%,-50%) scale(.3);opacity:.9;border-width:3px}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0;border-width:1px}}
+/* ========================================= */
+.message-feed{padding:0 22px;margin-top:18px;display:flex;flex-direction:column;gap:10px;max-height:170px;overflow-y:auto;scrollbar-width:none}
+.message-feed::-webkit-scrollbar{display:none}
+.topic-row{display:flex;align-items:flex-start;gap:8px;padding:2px 0}
+.topic-text{flex:1;font-size:13px;color:#00E5FF;font-weight:500;line-height:1.5;word-break:break-word}
+.topic-edit{color:#F5D76E;cursor:pointer;font-size:12px;padding:5px 7px;border-radius:8px}
+.messages-list{display:flex;flex-direction:column;gap:5px}
+.msg-item{font-size:12px;line-height:1.5;color:#e6ddf2;padding:1px 0;word-break:break-word;animation:msgSlide .35s ease}
+@keyframes msgSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg-item .msg-name{color:#F5D76E;font-weight:600;margin-right:6px}
+.msg-item .msg-name::after{content:':';color:#F5D76E}
+.msg-item.gift-msg{color:#F5D76E;font-weight:500}
+.msg-empty{font-size:11px;color:#6b5e85;font-style:italic;padding:2px 0}
+.activity-strip{position:absolute;left:12px;right:12px;bottom:90px;z-index:8;pointer-events:none;display:flex;flex-direction:column-reverse;gap:4px;max-height:130px;overflow:hidden}
+.activity-item{background:rgba(0,0,0,.6);color:#ffdf80;font-size:11px;font-weight:500;padding:5px 12px;border-radius:14px;align-self:flex-start;animation:slideIn .3s ease;backdrop-filter:blur(6px);border:1px solid rgba(245,215,110,.25);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.bottom-bar{position:absolute;bottom:0;left:0;width:100%;display:flex;justify-content:space-around;align-items:center;padding:15px 6px 25px 6px;background:linear-gradient(to top,rgba(5,0,10,.95),transparent);z-index:10}
+.bottom-icon{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.05);display:flex;justify-content:center;align-items:center;font-size:17px;color:#ddd;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:.3s;position:relative;flex-shrink:0}
+.bottom-icon:active{transform:scale(.93)}
+.gift-btn{width:56px;height:56px;background:linear-gradient(135deg,#a855f7,#6366f1);font-size:24px;color:#fff;box-shadow:0 0 20px rgba(168,85,247,.6);border:2px solid rgba(255,255,255,.4);transform:translateY(-10px)}
+.bottom-icon.mic-on{background:rgba(43,138,64,.3);color:#7dffa1;border-color:rgba(43,138,64,.6);box-shadow:0 0 12px rgba(43,138,64,.5)}
+.bottom-icon.mic-off{background:rgba(255,77,109,.25);color:#ff8a9c;border-color:rgba(255,77,109,.6);box-shadow:0 0 12px rgba(255,77,109,.5)}
+.bottom-icon .unread-dot{position:absolute;top:2px;right:2px;width:10px;height:10px;border-radius:50%;background:#ff4d6d;border:2px solid #0a0318;display:none}
+.bottom-icon.has-unread .unread-dot{display:block;animation:pulse 1.6s infinite}
+.yellow-glow{position:absolute;bottom:-60px;right:-60px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,200,0,.3) 0,rgba(255,200,0,0) 70%);border-radius:50%;pointer-events:none;z-index:5;animation:pulse 4s infinite alternate}
+@keyframes pulse{0%{transform:scale(1);opacity:.4}100%{transform:scale(1.3);opacity:.7}}
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;display:none;backdrop-filter:blur(3px)}
+.sheet-backdrop.active{display:block}
+.bottom-sheet{position:fixed;left:50%;bottom:0;width:100%;max-width:420px;z-index:160;background:rgba(20,10,35,.98);border-top-left-radius:22px;border-top-right-radius:22px;padding:10px 14px 20px 14px;transform:translate(-50%,110%);transition:transform .3s cubic-bezier(.2,.8,.3,1);box-shadow:0 -10px 40px rgba(0,0,0,.6);border-top:1px solid rgba(255,255,255,.06);padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}
+.bottom-sheet.active{transform:translate(-50%,0)}
+.sheet-title{text-align:center;font-size:13px;font-weight:600;color:#F5D76E;padding:12px 0 8px 0;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:6px}
+.sheet-option{display:flex;align-items:center;gap:16px;padding:15px 12px;font-size:15px;color:#fff;font-weight:500;cursor:pointer;border-radius:12px;transition:.2s;border-bottom:1px solid rgba(255,255,255,.05)}
+.sheet-option:last-of-type{border-bottom:none}
+.sheet-option:active{background:rgba(255,255,255,.08)}
+.sheet-option .opt-icon{width:32px;height:32px;display:flex;justify-content:center;align-items:center;font-size:18px;color:#fff;background:rgba(255,255,255,.07);border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.08)}
+.sheet-option .opt-label{flex:1}
+.sheet-option .opt-arrow{font-size:11px;color:#666}
+.sheet-option.danger{color:#ff8a9c}
+.sheet-option.danger .opt-icon{color:#ff8a9c;background:rgba(255,77,109,.1);border-color:rgba(255,77,109,.25)}
+.sheet-option.gold{color:#F5D76E}
+.sheet-option.gold .opt-icon{color:#F5D76E;background:rgba(245,215,110,.1)}
+.sheet-option.purple{color:#d8b4fe}
+.sheet-option.purple .opt-icon{color:#d8b4fe;background:rgba(168,85,247,.12)}
+.sheet-option.cyan{color:#7dd3fc}
+.sheet-option.cyan .opt-icon{color:#7dd3fc;background:rgba(125,211,252,.12)}
+.sheet-option.green .opt-icon{color:#7dffa1;background:rgba(43,138,64,.15)}
+.sheet-cancel{margin-top:10px;background:linear-gradient(180deg,#7dffa1,#2ecc71);color:#0a1f10;font-weight:700;font-size:16px;padding:14px;border-radius:12px;text-align:center;cursor:pointer}
+.target-list{display:flex;flex-direction:column;gap:8px;padding:6px 0 10px;max-height:50vh;overflow-y:auto}
+.target-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,.04);border-radius:14px;border:1px solid rgba(255,255,255,.05);cursor:pointer}
+.target-item:active{background:rgba(245,215,110,.1)}
+.target-item img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #F5D76E}
+.target-item .tname{flex:1;font-size:13px;font-weight:600;color:#fff}
+.target-item .tcoins{font-size:11px;color:#7dd3fc;font-weight:600}
+.target-item .tchev{color:#666;font-size:12px}
+.chat-input-row{display:flex;align-items:center;gap:10px;padding:12px 4px 4px 4px}
+.chat-input-row input,.chat-input-row textarea{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(245,215,110,.35);border-radius:22px;padding:12px 18px;color:#fff;font-family:inherit;font-size:14px;outline:none;min-width:0}
+.chat-input-row input:focus{border-color:#F5D76E}
+.chat-send-btn{width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;font-size:16px;cursor:pointer;display:flex;justify-content:center;align-items:center;flex-shrink:0}
+.empty-notice{text-align:center;font-size:13px;color:#777;padding:30px 20px;font-style:italic}
+.modal-overlay{position:absolute;inset:0;background:rgba(10,5,20,.95);z-index:200;display:none;flex-direction:column;padding:20px;backdrop-filter:blur(10px);overflow-y:auto}
+.modal-overlay.active{display:flex}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h3{color:#fff;font-size:18px;font-weight:600}
+.close-btn{color:#fff;cursor:pointer;font-size:18px;background:rgba(255,255,255,.1);width:35px;height:35px;border-radius:50%;display:flex;justify-content:center;align-items:center}
+.room-modal-top{display:flex;flex-direction:column;align-items:center;margin-bottom:20px}
+.room-logo-modal{width:100px;height:100px;border-radius:50%;position:relative;background:radial-gradient(circle at 30% 30%,#2b8a40,#0f3d1c);border:3px solid #F5D76E;box-shadow:0 0 25px rgba(245,215,110,.55);overflow:hidden;cursor:pointer;display:flex;justify-content:center;align-items:center}
+.room-logo-modal img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.room-logo-modal .cassette-text{font-size:13px;font-weight:700;color:#fff;text-align:center;line-height:1.1}
+.room-title-modal{font-size:16px;color:#fff;font-weight:600;margin-top:12px}
+.room-id-modal{font-size:12px;color:#aaa;margin-top:4px}
+.owner-info-modal{display:none;align-items:center;gap:10px;margin-top:14px;background:rgba(245,215,110,.08);padding:8px 14px 8px 8px;border-radius:30px;border:1px solid rgba(245,215,110,.35)}
+.owner-info-modal img{width:34px;height:34px;border-radius:50%;border:2px solid #F5D76E;object-fit:cover}
+.owner-info-modal .oi-text{display:flex;flex-direction:column;text-align:left}
+.owner-info-modal .oi-name{font-size:12px;color:#fff;font-weight:600}
+.owner-info-modal .oi-uid{font-size:10px;color:#aaa}
+.owner-info-modal .oi-crown{color:#ffb400;font-size:14px;margin-left:6px}
+.member-title{font-size:18px;font-weight:600;margin:15px 0 10px 0;text-align:center}
+.search-bar{background:rgba(255,255,255,.08);border-radius:25px;display:flex;align-items:center;padding:12px 15px;margin-bottom:10px;border:1px solid rgba(255,255,255,.05)}
+.search-bar i{color:#aaa;margin-right:10px}
+.search-bar input{background:transparent;border:none;color:#fff;flex:1;outline:none;font-size:14px}
+.member-counter{text-align:right;color:#aaa;font-size:12px;margin-bottom:15px;padding-right:5px}
+.user-list{flex:1;display:flex;flex-direction:column;gap:15px;padding-bottom:20px}
+.user-card{display:flex;align-items:center;gap:15px;background:rgba(255,255,255,.04);padding:12px;border-radius:15px;border:1px solid rgba(255,255,255,.03);cursor:pointer}
+.user-card:active{background:rgba(255,255,255,.08)}
+.user-avatar-box{position:relative;width:55px;height:55px;flex-shrink:0}
+.user-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.3)}
+.user-avatar.owner-border{border-color:#F5D76E;box-shadow:0 0 14px rgba(245,215,110,.7)}
+.user-avatar.admin-border{border-color:#22c55e;box-shadow:0 0 14px rgba(34,197,94,.7)}
+.user-badge{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.user-badge.owner{background:linear-gradient(135deg,#fff8dc,#d4af37);color:#1a1405}
+.user-badge.admin{background:linear-gradient(135deg,#4ade80,#16a34a);color:#fff}
+.user-badge.member{background:#e5e7eb;color:#333}
+.user-badge.me{background:#ffb400;color:#000}
+.user-details{flex:1;min-width:0}
+.user-name-row{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#fff}
+.user-name-row i.role-crown{font-size:12px;color:#ffb400}
+.user-name-row i.role-shield{font-size:12px;color:#22c55e}
+.user-desc{font-size:11px;color:#aaa;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty-msg{text-align:center;color:#777;font-size:13px;padding:30px 0}
+.listener-header-box{text-align:center;margin-bottom:20px}
+.listener-header-icon{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);display:flex;justify-content:center;align-items:center;margin:0 auto 12px;border:2px solid rgba(255,255,255,.2)}
+.listener-header-icon i{font-size:28px;color:#fff}
+.listener-header-count{font-size:32px;font-weight:700;color:#fff}
+.listener-header-text{font-size:12px;color:#aaa;margin-top:4px}
+.listener-user-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.04);padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.04)}
+.listener-user-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #F5D76E;flex-shrink:0}
+.listener-user-avatar.owner-border{border-color:#F5D76E;box-shadow:0 0 10px rgba(245,215,110,.6)}
+.listener-user-avatar.admin-border{border-color:#22c55e;box-shadow:0 0 10px rgba(34,197,94,.6)}
+.listener-user-name{font-size:13px;font-weight:600;color:#fff}
+.listener-user-sub{font-size:10px;color:#8f8f9f;margin-top:2px}
+.listener-user-role{font-size:9px;font-weight:600;padding:2px 7px;border-radius:8px}
+.listener-user-role.owner{background:linear-gradient(135deg,#fff8dc,#d4af37);color:#000}
+.listener-user-role.admin{background:linear-gradient(135deg,#4ade80,#16a34a);color:#fff}
+.listener-user-role.member{background:#e5e7eb;color:#333}
+.listener-user-role.me{background:#ffb400;color:#000}
+.invite-btn{padding:6px 12px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;margin-left:auto}
+.invite-btn.invited{background:linear-gradient(135deg,#2ecc71,#27ae60)}
+.edit-profile-box{background:rgba(30,15,50,.95);border-radius:20px;padding:25px;border:1px solid rgba(255,255,255,.1);width:100%;max-width:350px;margin:auto;text-align:center}
+.edit-avatar-wrap{position:relative;width:110px;height:110px;margin:0 auto 20px}
+.edit-avatar-container{width:100%;height:100%;border-radius:50%;overflow:hidden;border:3px solid #F5D76E;display:flex;justify-content:center;align-items:center;cursor:pointer}
+.edit-avatar-container img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.edit-avatar-container .cassette-text{font-size:14px;font-weight:700;color:#fff;text-align:center}
+.edit-avatar-overlay{position:absolute;bottom:0;right:0;background:#6366f1;width:34px;height:34px;border-radius:50%;display:flex;justify-content:center;align-items:center;color:#fff;font-size:13px;border:3px solid #1a0b2e;z-index:2;cursor:pointer}
+.input-group{margin-bottom:15px;text-align:left}
+.input-group label{font-size:12px;color:#aaa;margin-bottom:5px;display:block}
+.input-group input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;color:#fff;font-size:14px;outline:none}
+.input-group input:focus{border-color:#F5D76E}
+.save-btn{width:100%;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;color:#fff;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px}
+#cropModal{z-index:300}
+.crop-wrap{display:flex;flex-direction:column;height:100%;gap:15px}
+.crop-image-box{flex:1;background:#000;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:300px}
+.crop-image-box img{max-width:100%;max-height:100%;display:block}
+.crop-actions{display:flex;gap:10px}
+.crop-actions button{flex:1;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;color:#fff}
+.crop-cancel{background:rgba(255,255,255,.1)}
+.crop-confirm{background:linear-gradient(135deg,#a855f7,#6366f1)}
+.toast-msg{position:absolute;left:50%;bottom:120px;transform:translate(-50%,20px);background:rgba(30,15,50,.96);border:1px solid rgba(245,215,110,.45);color:#fff;font-size:12px;font-weight:500;padding:10px 18px;border-radius:22px;opacity:0;pointer-events:none;transition:.3s;z-index:900;max-width:88%;text-align:center}
+.toast-msg.show{opacity:1;transform:translate(-50%,0)}
+.toast-msg.top-mode{top:16px;bottom:auto;transform:translate(-50%,-20px)}
+.toast-msg.top-mode.show{transform:translate(-50%,0)}
+body.perm-over .sheet-backdrop{z-index:210}
+body.perm-over #permissionSheet{z-index:215}
+#userProfileModal{position:absolute;inset:0;z-index:250;display:none;flex-direction:column;background:#0d0620;overflow-y:auto;padding:0}
+#userProfileModal.active{display:flex}
+.profile-top-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 14px 8px 14px;position:absolute;top:0;left:0;right:0;z-index:5}
+.profile-top-bar i{width:38px;height:38px;display:flex;justify-content:center;align-items:center;font-size:17px;color:#fff;background:rgba(0,0,0,.45);border-radius:50%;cursor:pointer}
+.profile-top-bar .profile-at{font-size:18px;color:#fff;width:38px;height:38px;display:flex;justify-content:center;align-items:center;background:rgba(0,0,0,.45);border-radius:50%;margin-left:auto;margin-right:8px}
+.profile-cover{width:100%;height:240px;position:relative;overflow:hidden;background:linear-gradient(135deg,#4a105a,#a855f7);flex-shrink:0}
+.profile-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-cover::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35) 0,transparent 35%,transparent 60%,rgba(13,6,32,.95) 100%);pointer-events:none}
+.profile-avatar-wrap{margin-top:-70px;margin-left:22px;position:relative;z-index:3;width:128px;height:128px}
+.profile-avatar{width:128px;height:128px;border-radius:50%;border:4px solid #0d0620;object-fit:cover;background:#333}
+.profile-avatar.owner-border{border-color:#F5D76E;box-shadow:0 0 25px rgba(245,215,110,.6)}
+.profile-avatar.admin-border{border-color:#22c55e;box-shadow:0 0 25px rgba(34,197,94,.6)}
+.profile-info{padding:14px 22px 0}
+.profile-name{font-size:24px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.profile-name i.owner-crown{color:#ffb400;font-size:16px}
+.profile-name i.admin-shield{color:#22c55e;font-size:16px}
+.profile-uid{font-size:12px;color:#9c8fb0;margin-top:6px;display:flex;align-items:center;gap:6px}
+.profile-followers{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 14px;border-radius:22px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.35);font-size:13px;color:#00E5FF;font-weight:600}
+.profile-actions{display:flex;gap:10px;padding:22px 22px 12px}
+.profile-btn{flex:1;padding:14px 12px;border-radius:14px;border:none;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;color:#fff;font-family:inherit}
+.profile-btn.follow-btn{background:linear-gradient(135deg,#00E5FF,#0088cc)}
+.profile-btn.follow-btn.following{background:rgba(255,255,255,.06);color:#00E5FF;border:1px solid rgba(0,229,255,.45)}
+.profile-btn.chat-btn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15)}
+.profile-btn.gift-btn-p{flex:0 0 58px;background:linear-gradient(135deg,#a855f7,#6366f1);font-size:18px;padding:14px 0}
+.profile-bottom-bar{margin-top:auto;display:flex;align-items:center;justify-content:space-around;padding:14px 6px calc(16px + env(safe-area-inset-bottom)) 6px;background:rgba(13,6,32,.98);border-top:1px solid rgba(255,255,255,.07);position:sticky;bottom:0}
+.pbar-icon{width:48px;height:48px;display:flex;justify-content:center;align-items:center;font-size:18px;color:#fff;cursor:pointer;border-radius:50%}
+.pbar-icon.danger{color:#ff4d6d}
+.pbar-icon.warn{color:#F5D76E}
+.pbar-icon.cyan{color:#00E5FF}
+.pbar-sep{width:1px;height:28px;background:rgba(255,255,255,.13)}
+#permissionSheet{background:#fff !important;color:#1a1a1a;padding:18px 16px calc(20px + env(safe-area-inset-bottom)) 16px !important}
+#permissionSheet .perm-header{display:flex;align-items:center;gap:12px;padding:0 4px 16px 4px}
+#permissionSheet .perm-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#000}
+#permissionSheet .perm-name{flex:1;font-size:16px;font-weight:600;color:#111;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#permissionSheet .perm-info{font-size:18px;color:#666;cursor:pointer;padding:6px}
+#permissionSheet .perm-section-title{font-size:15px;font-weight:600;color:#333;padding:6px 6px 12px 6px}
+#permissionSheet .perm-options{background:#f7f7f7;border-radius:14px;overflow:hidden;margin-bottom:16px}
+#permissionSheet .perm-option{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;font-size:15px;color:#222;font-weight:500;background:#f7f7f7;border-bottom:1px solid #eaeaea}
+#permissionSheet .perm-option:last-child{border-bottom:none}
+#permissionSheet .perm-option .perm-icon{font-size:18px;color:#2196f3;width:22px;text-align:center}
+#permissionSheet .perm-option .perm-label{flex:1}
+#permissionSheet .perm-option .perm-check{font-size:18px;color:#2196f3;opacity:0}
+#permissionSheet .perm-option.selected .perm-check{opacity:1}
+#permissionSheet .perm-option.selected .perm-label{font-weight:600;color:#0d47a1}
+#permissionSheet .perm-remove-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;border-radius:14px;background:#fff;border:1px solid #ffd0d0;color:#e53935;font-size:15px;font-weight:600;cursor:pointer}
+.role-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.role-dot.owner{background:#ff9800}
+.role-dot.admin{background:#22c55e}
+.role-dot.member{background:#9ca3af}
+#webSheetBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:170;display:none;backdrop-filter:blur(2px);opacity:0;transition:opacity .3s}
+#webSheetBackdrop.active{display:block;opacity:1}
+#webSheet{position:fixed;left:50%;bottom:0;width:100%;max-width:420px;height:55vh;background:#1a0b2e;border-top-left-radius:22px;border-top-right-radius:22px;z-index:180;display:flex;flex-direction:column;transform:translate(-50%,110%);transition:transform .3s cubic-bezier(.2,.8,.3,1),height .25s ease;box-shadow:0 -10px 40px rgba(0,0,0,.7);overflow:hidden;border-top:1px solid rgba(255,255,255,.08)}
+#webSheet.active{transform:translate(-50%,0)}
+#webSheet.dragging{transition:none}
+#webSheet.fullscreen{height:100vh;height:100dvh;border-radius:0}
+#webSheetHeader{position:relative;display:flex;align-items:center;padding:12px 14px 10px 14px;background:rgba(20,10,35,.98);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;cursor:grab;touch-action:none}
+.web-sheet-grab{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:42px;height:4px;border-radius:4px;background:rgba(255,255,255,.35)}
+.web-sheet-title{flex:1;font-size:14px;font-weight:600;color:#F5D76E;text-align:center;padding-left:30px}
+.web-sheet-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;cursor:pointer;flex-shrink:0}
+.web-sheet-body{flex:1;position:relative;background:#fff;overflow:hidden}
+.web-sheet-body iframe{width:100%;height:100%;border:none;display:block}
+.web-sheet-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a0b2e;color:#F5D76E;gap:14px;z-index:2;transition:opacity .3s;font-size:13px}
+.web-sheet-loading.hidden{opacity:0;pointer-events:none}
+.web-sheet-spinner{width:36px;height:36px;border:3px solid rgba(245,215,110,.2);border-top-color:#F5D76E;border-radius:50%;animation:webSpin .8s linear infinite}
+@keyframes webSpin{to{transform:rotate(360deg)}}
+#giftAnimLayer{position:fixed;inset:0;z-index:2000;display:none;pointer-events:none;overflow:hidden}
+#giftAnimLayer.active{display:block}
+.gift-anim-glow{position:absolute;top:50%;left:50%;width:80vmin;height:80vmin;border-radius:50%;transform:translate(-50%,-50%) scale(0);background:radial-gradient(circle,rgba(255,209,102,.55) 0,rgba(255,42,116,.35) 30%,rgba(139,92,246,.2) 55%,transparent 75%);filter:blur(50px);opacity:0;animation:gaGlowPulse 3200ms ease-out forwards}
+@keyframes gaGlowPulse{0%{transform:translate(-50%,-50%) scale(.1);opacity:0}25%{transform:translate(-50%,-50%) scale(1.1);opacity:.95}70%{transform:translate(-50%,-50%) scale(1.6);opacity:.6}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+.gift-anim-ring{position:absolute;top:50%;left:50%;width:70px;height:70px;border-radius:50%;border:3px solid rgba(255,209,102,.85);box-shadow:0 0 20px rgba(255,209,102,.9),0 0 40px rgba(255,42,116,.6),inset 0 0 20px rgba(255,209,102,.5);transform:translate(-50%,-50%) scale(0);opacity:0;animation:gaRingExpand 1600ms cubic-bezier(.2,.8,.2,1) forwards}
+.gift-anim-ring.pink{border-color:rgba(255,42,116,.85);box-shadow:0 0 20px rgba(255,42,116,.9),0 0 40px rgba(139,92,246,.6),inset 0 0 20px rgba(255,42,116,.5)}
+.gift-anim-ring.cyan{border-color:rgba(34,211,238,.85);box-shadow:0 0 20px rgba(34,211,238,.9),0 0 40px rgba(139,92,246,.55),inset 0 0 20px rgba(34,211,238,.5)}
+@keyframes gaRingExpand{0%{transform:translate(-50%,-50%) scale(0);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-50%) scale(7);opacity:0}}
+.gift-anim-spark{position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%) scale(0);opacity:0;will-change:transform,opacity}
+.gift-anim-petal{position:absolute;top:-60px;font-size:30px;line-height:1;opacity:0;will-change:transform,opacity;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35));z-index:3}
+.gift-anim-satellite{position:absolute;top:50%;left:50%;font-size:34px;line-height:1;transform:translate(-50%,-50%) scale(0) rotate(0);opacity:0;will-change:transform,opacity;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;filter:drop-shadow(0 0 12px rgba(255,209,102,.85));z-index:4}
+.gift-anim-main{position:absolute;top:50%;left:50%;font-size:140px;line-height:1;transform:translate(-50%,-50%) scale(0);opacity:0;will-change:transform,opacity,filter;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;filter:drop-shadow(0 0 26px rgba(255,209,102,.95)) drop-shadow(0 0 55px rgba(255,42,116,.65)) drop-shadow(0 0 90px rgba(139,92,246,.45));z-index:5}
+.gift-anim-main img{width:140px;height:140px;object-fit:cover;border-radius:50%;display:block}
+.gift-anim-label{position:absolute;top:14%;left:50%;transform:translateX(-50%);color:#F5D76E;font-size:20px;font-weight:800;padding:10px 24px;background:linear-gradient(135deg,rgba(168,85,247,.55),rgba(245,215,110,.45));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:30px;border:2px solid rgba(245,215,110,.7);box-shadow:0 0 22px rgba(245,215,110,.65),0 6px 18px rgba(0,0,0,.75);white-space:nowrap;z-index:6;opacity:0;animation:gaLabelIn 600ms ease forwards}
+@keyframes gaLabelIn{0%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.75)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+.gift-anim-video{position:absolute;top:50%;left:50%;width:100vw;height:100vh;transform:translate(-50%,-50%) scale(0);object-fit:cover;opacity:0;will-change:transform,opacity;z-index:5;pointer-events:none}
+@media (max-height:700px){.seats-grid{gap:12px 4px;margin-top:10px}.message-feed{max-height:120px;margin-top:12px}.seat-avatar{max-width:48px}.gift-btn{width:50px;height:50px;font-size:22px}.bottom-icon{width:38px;height:38px;font-size:15px}.gift-anim-main{font-size:110px}.gift-anim-main img{width:110px;height:110px}}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div class="login-overlay hidden" id="loginOverlay">
+        <div class="login-cassette"><i class="fa-solid fa-headphones"></i></div>
+        <div class="login-title">HOUR <span>FM</span></div>
+        <div class="login-sub">মাইকে উঠতে, সিট নিতে বা রুম এডিট করতে Google দিয়ে সাইন ইন করুন।</div>
+        <button class="google-btn" onclick="googleLogin()"><i class="fa-brands fa-google"></i>Sign in with Google</button>
+        <button class="login-cancel" onclick="hideLogin()">পরে করবো</button>
+    </div>
+
+    <div class="top-bar">
+        <div class="room-info" onclick="toggleMemberModal()">
+            <div class="room-logo-circle" id="room-logo-preview"><span class="cassette-text">HOUR<br>FM</span></div>
+            <div class="room-text">
+                <div class="room-title-top"><span id="room-name-display">Loading…</span><i class="fa-solid fa-music"></i></div>
+                <div class="room-points">
+                    <i class="fa-solid fa-trophy trophy"></i>
+                    <i class="fa-solid fa-gem gem"></i>
+                    <span id="roomPointsVal">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="top-right">
+            <div class="listener-group" onclick="toggleListenersModal()">
+                <div class="listener-avatar-stack"><img src="" alt="User" class="listener-avatar" id="my-avatar-top"></div>
+                <div class="listener-count" id="userCountBadge">0</div>
+            </div>
+            <div class="exit-btn guest" id="authBtn" onclick="handleAuthBtn()"><i class="fa-solid fa-right-to-bracket"></i></div>
+        </div>
+    </div>
+
+    <div class="seats-grid" id="seatsGrid"></div>
+
+    <div class="message-feed" id="messageFeed">
+        <div class="topic-row">
+            <div class="topic-text" id="topicText">🎧FM 📻➡️SP ✨🎤Room 🎵</div>
+            <i class="fa-solid fa-pen topic-edit" onclick="editTopic()"></i>
+        </div>
+        <div class="messages-list" id="messagesList"></div>
+    </div>
+
+    <div class="activity-strip" id="activityStrip"></div>
+
+    <div class="bottom-bar">
+        <div class="bottom-icon" onclick="openWebSheet('chat')"><i class="fa-solid fa-comment-dots"></i></div>
+        <div class="bottom-icon" onclick="openWebSheet('emoji')"><i class="fa-solid fa-face-smile"></i></div>
+        <div class="bottom-icon" id="msgBtn" onclick="openMessageInput()">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span class="unread-dot"></span>
+        </div>
+        <div class="bottom-icon" id="micToggleBtn" onclick="toggleMyMicFromBar()"><i class="fa-solid fa-microphone"></i></div>
+        <div class="bottom-icon gift-btn" onclick="openGiftTargetPicker()"><i class="fa-solid fa-gift"></i></div>
+        <div class="bottom-icon" onclick="openWebSheet('games')"><i class="fa-solid fa-gamepad"></i></div>
+    </div>
+
+    <div class="yellow-glow"></div>
+    <div class="toast-msg" id="toastBox"></div>
+
+    <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+
+    <div class="bottom-sheet" id="seatSheet">
+        <div class="sheet-title" id="sheetTitle">Seat</div>
+        <div id="sheetOptions"></div>
+        <div class="sheet-cancel" onclick="closeSheet()">Cancel</div>
+    </div>
+
+    <div class="bottom-sheet" id="giftPickerSheet">
+        <div class="sheet-title">Select who to send gift</div>
+        <div class="target-list" id="giftTargetList"></div>
+        <div class="sheet-cancel" onclick="closeSheet()">Cancel</div>
+    </div>
+
+    <div class="bottom-sheet" id="chatSheet">
+        <div class="sheet-title">Send message to room</div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Type your message..." maxlength="200" onkeydown="if(event.key==='Enter'){event.preventDefault();sendChatMessage();}">
+            <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div class="bottom-sheet" id="emptySheet">
+        <div class="sheet-title" id="emptySheetTitle">Coming Soon</div>
+        <div class="empty-notice" id="emptySheetBody">শীঘ্রই আসছে...</div>
+        <div class="sheet-cancel" onclick="closeSheet()">Close</div>
+    </div>
+
+    <div class="bottom-sheet" id="permissionSheet">
+        <div class="perm-header">
+            <img src="" alt="" class="perm-avatar" id="permAvatar">
+            <div class="perm-name" id="permName">—</div>
+            <i class="fa-solid fa-circle-info perm-info" onclick="openCurrentProfileFromSheet()"></i>
+        </div>
+        <div class="perm-section-title">Permission Settings</div>
+        <div class="perm-options">
+            <div class="perm-option" id="optAdmin" onclick="setPermissionRole('admin')"><i class="fa-solid fa-user perm-icon"></i><span class="perm-label">Admin</span><i class="fa-solid fa-check perm-check"></i></div>
+            <div class="perm-option" id="optMember" onclick="setPermissionRole('member')"><i class="fa-solid fa-user perm-icon"></i><span class="perm-label">Member</span><i class="fa-solid fa-check perm-check"></i></div>
+        </div>
+        <div class="perm-remove-btn" onclick="removeUserFromRoom()"><i class="fa-solid fa-user-minus"></i><span>Remove from member</span></div>
+    </div>
+
+    <div class="modal-overlay" id="listenersModal">
+        <div class="modal-header"><h3>Online Listeners</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('listenersModal')"></i></div>
+        <div class="listener-header-box">
+            <div class="listener-header-icon"><i class="fa-solid fa-headphones"></i></div>
+            <div class="listener-header-count" id="listenerTotalCount">0</div>
+            <div class="listener-header-text">এখন অনলাইনে আছেন</div>
+        </div>
+        <div class="user-list" id="listenerList"></div>
+    </div>
+
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal-header"><h3>Room Info</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('memberModal')"></i></div>
+        <div class="room-modal-top">
+            <div class="room-logo-modal" id="room-logo-modal-container" onclick="openEditRoom()"><span class="cassette-text">HOUR<br>FM</span></div>
+            <div class="room-title-modal" id="room-name-modal-display">Loading…</div>
+            <div class="room-id-modal" id="room-id-modal">ID:---</div>
+            <div class="owner-info-modal" id="owner-info-modal"></div>
+        </div>
+        <div class="member-title">Member</div>
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="memberSearch" placeholder="নাম বা UID খুঁজুন" oninput="renderMembers()">
+            <i class="fa-solid fa-xmark" style="font-size:12px;cursor:pointer" onclick="clearSearch()"></i>
+        </div>
+        <div class="member-counter" id="memberCounter">0/4000</div>
+        <div class="user-list" id="userList"></div>
+    </div>
+
+    <div class="modal-overlay" id="editRoomModal">
+        <div class="edit-profile-box">
+            <div class="modal-header"><h3>Edit Room Profile</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('editRoomModal')"></i></div>
+            <div class="edit-avatar-wrap">
+                <div class="edit-avatar-container" onclick="document.getElementById('roomImageUpload').click()">
+                    <div id="room-logo-edit-preview" style="width:100%;height:100%;display:flex;justify-content:center;align-items:center"><span class="cassette-text">HOUR<br>FM</span></div>
+                </div>
+                <div class="edit-avatar-overlay" onclick="document.getElementById('roomImageUpload').click()"><i class="fa-solid fa-camera"></i></div>
+            </div>
+            <input type="file" id="roomImageUpload" accept="image/*" style="display:none" onchange="previewRoomImage(event)">
+            <div class="input-group"><label>Room Name</label><input type="text" id="roomNameInput" maxlength="24"></div>
+            <div class="input-group"><label>Room ID</label><input type="text" id="roomIdInput" disabled style="opacity:.5"></div>
+            <button class="save-btn" onclick="saveRoomProfile()">Save Changes</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cropModal">
+        <div class="crop-wrap">
+            <div class="modal-header"><h3>ছবি ক্রপ করুন</h3><i class="fa-solid fa-xmark close-btn" onclick="cancelCrop()"></i></div>
+            <div class="crop-image-box"><img id="cropImage" alt=""></div>
+            <div class="crop-actions">
+                <button class="crop-cancel" onclick="cancelCrop()">বাতিল</button>
+                <button class="crop-confirm" onclick="applyCrop()">ক্রপ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="userProfileModal">
+        <div class="profile-top-bar">
+            <i class="fa-solid fa-arrow-left" onclick="closeUserProfile()"></i>
+            <span class="profile-at">@</span>
+            <i class="fa-solid fa-ellipsis" onclick="openProfileMoreSheet()"></i>
+        </div>
+        <div class="profile-cover"><img src="" alt="" id="profileCover"></div>
+        <div class="profile-avatar-wrap"><img src="" alt="" class="profile-avatar" id="profileAvatar"></div>
+        <div class="profile-info">
+            <div class="profile-name" id="profileName">—</div>
+            <div class="profile-uid" id="profileUid">UID: —</div>
+            <div class="profile-followers"><i class="fa-regular fa-star"></i><span id="profileFollowers">0</span><span style="font-weight:500;color:#7dd3fc;margin-left:2px">Followers</span></div>
+        </div>
+        <div class="profile-actions">
+            <button class="profile-btn follow-btn" id="profileFollowBtn" onclick="toggleFollowCurrent()"><i class="fa-solid fa-plus"></i><span>Follow</span></button>
+            <button class="profile-btn chat-btn" onclick="profileChatPlaceholder()"><i class="fa-solid fa-comment-dots"></i><span>Chat</span></button>
+            <button class="profile-btn gift-btn-p" onclick="profileGiftCurrent()"><i class="fa-solid fa-gift"></i></button>
+        </div>
+        <div class="profile-bottom-bar" id="profileBottomBar">
+            <div class="pbar-icon warn" onclick="profileActionMute()"><i class="fa-solid fa-microphone-slash"></i></div>
+            <div class="pbar-sep"></div>
+            <div class="pbar-icon cyan" onclick="profileActionLeave()"><i class="fa-solid fa-arrow-down"></i></div>
+            <div class="pbar-sep"></div>
+            <div class="pbar-icon danger" onclick="profileActionKick()"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
+            <div class="pbar-sep"></div>
+            <div class="pbar-icon"><i class="fa-solid fa-gear"></i></div>
+            <div class="pbar-icon" onclick="openProfileMoreSheet()"><i class="fa-solid fa-ellipsis"></i></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="webSheetBackdrop" onclick="closeWebSheet()"></div>
+<div id="webSheet">
+    <div id="webSheetHeader">
+        <div class="web-sheet-grab"></div>
+        <div class="web-sheet-title" id="webSheetTitle">Loading…</div>
+        <div class="web-sheet-close" onclick="closeWebSheet()"><i class="fa-solid fa-xmark"></i></div>
+    </div>
+    <div class="web-sheet-body">
+        <div class="web-sheet-loading" id="webSheetLoading"><div class="web-sheet-spinner"></div><div>Loading…</div></div>
+        <iframe id="webSheetFrame" allow="microphone;camera;clipboard-read;clipboard-write;autoplay;fullscreen"></iframe>
+    </div>
+</div>
+
+<div id="giftAnimLayer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, remove, get, onDisconnect, push, query, limitToLast, runTransaction } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCTn3QEYtRMxm7Y91RSFSvbRJSRHcXMEdI",
+    authDomain: "room-7fbf7.firebaseapp.com",
+    databaseURL: "https://room-7fbf7-default-rtdb.firebaseio.com",
+    projectId: "room-7fbf7",
+    storageBucket: "room-7fbf7.firebasestorage.app",
+    messagingSenderId: "417946695868",
+    appId: "1:417946695868:web:34c6f63269aaf659b2b8b9"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+provider.setCustomParameters({ prompt: 'select_account' });
+
+function resolveRoomId(){const p=new URLSearchParams(location.search);const h=location.hash.replace(/^#\/?/,'');return p.get('room')||p.get('id')||p.get('roomId')||h||null}
+const ROOM_ID = resolveRoomId();
+const BASE = ROOM_ID ? `rooms/${ROOM_ID}` : null;
+
+if(!ROOM_ID){
+    document.body.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:radial-gradient(circle at 50% 100%,#4a105a,#1a0b2e,#05020a);color:#fff;font-family:'Poppins',sans-serif;padding:30px;text-align:center;gap:18px"><i class="fa-solid fa-triangle-exclamation" style="font-size:52px;color:#F5D76E"></i><h2 style="font-size:20px;font-weight:600">রুম আইডি পাওয়া যায়নি</h2><p style="color:#aaa;max-width:300px;line-height:1.6;font-size:13px">অনুগ্রহ করে হোম পেজ থেকে আপনার রুমে প্রবেশ করুন।</p><a href="https://farjanaaktar1173-boop.github.io/Homepage/" style="padding:13px 32px;border-radius:50px;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;text-decoration:none;font-weight:600;font-size:14px"><i class="fa-solid fa-house" style="margin-right:8px"></i>হোম পেজে যান</a></div>`;
+    throw new Error('No room ID');
+}
+
+const WEB_LINKS={chat:'https://farjanaaktar1173-boop.github.io/Chat/',emoji:'https://farjanaaktar1173-boop.github.io/Emoje/',gift:'https://farjanaaktar1173-boop.github.io/Gift/',games:'https://farjanaaktar1173-boop.github.io/Game/'};
+const WEB_TITLES={chat:'Chat',emoji:'Reactions',gift:'Gift',games:'Games'};
+
+const state={roomName:'HOUR FM',roomId:ROOM_ID,roomLogo:null,owner:null,topic:'🎧FM 📻➡️SP ✨🎤Room 🎵',seats:new Array(10).fill(null),listeners:[],messages:[]};
+
+let myProfile=null,joined=false,pendingLogo=null,cropper=null,myListenerRef=null,lastActTs=0,lastSeenReactTs=0;
+let currentGiftTarget={uid:'',name:''};
+const invitedUsers=new Set(),followingUsers=new Set();
+let currentProfileUid=null,currentPermUid=null;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const GUEST_AVATAR='data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#3b2a4f"/><circle cx="50" cy="40" r="18" fill="#7a6a8f"/><ellipse cx="50" cy="88" rx="30" ry="22" fill="#7a6a8f"/></svg>`);
+
+window.showLogin=()=>$('loginOverlay').classList.remove('hidden');
+window.hideLogin=()=>$('loginOverlay').classList.add('hidden');
+window.googleLogin=async()=>{try{await signInWithPopup(auth,provider);hideLogin()}catch(e){console.error(e);toastMsg('লগইন ব্যর্থ: '+(e.code||e.message))}};
+window.handleAuthBtn=()=>{if(myProfile)exitRoom();else showLogin()};
+function requireLogin(){if(!myProfile){toastMsg('এই কাজটির জন্য লগইন করুন');showLogin();return false}return true}
+
+onAuthStateChanged(auth,async user=>{
+    if(user){
+        let name=user.displayName||(user.email?user.email.split('@')[0]:'User');
+        let avatar=user.photoURL||GUEST_AVATAR;
+        let moiId='',country='',voice='',diamonds=1000,followers=0;
+        try{const snap=await get(ref(db,'users/'+user.uid));if(snap.exists()){const u=snap.val();name=u.name||name;avatar=u.photo||avatar;moiId=u.moiId||'';country=u.country||'';voice=u.voice||'';diamonds=u.diamonds??1000;followers=u.followers??0}}catch(e){console.warn('user profile fetch error:',e)}
+        myProfile={uid:user.uid,name,avatar,email:user.email||'',moiId,country,voice,diamonds,followers,role:'member',coins:0};
+        $('my-avatar-top').src=myProfile.avatar;
+        const btn=$('authBtn');btn.classList.remove('guest');btn.innerHTML='<i class="fa-solid fa-power-off"></i>';
+        hideLogin();
+        if(!joined){joined=true;joinRoom()}
+    }else{
+        myProfile=null;joined=false;
+        $('my-avatar-top').src=GUEST_AVATAR;
+        const btn=$('authBtn');btn.classList.add('guest');btn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i>';
+    }
+});
+
+async function joinRoom(){
+    if(!myProfile)return;
+    myListenerRef=ref(db,`${BASE}/listeners/${myProfile.uid}`);
+    const existingSnap=await get(myListenerRef);const existing=existingSnap.val()||{};
+    await set(myListenerRef,{uid:myProfile.uid,name:myProfile.name,avatar:myProfile.avatar,email:myProfile.email,moiId:myProfile.moiId||'',country:myProfile.country||'',role:existing.role||(state.owner&&state.owner.uid===myProfile.uid?'owner':'member'),followers:existing.followers||myProfile.followers||0,coins:existing.coins||0,joined:existing.joined||Date.now()});
+    onDisconnect(myListenerRef).remove();
+    const idx=state.seats.findIndex(s=>s&&s.uid===myProfile.uid);
+    if(idx>-1){const seatRef=ref(db,`${BASE}/seats/${idx}`);const prev=state.seats[idx]||{};await set(seatRef,{uid:myProfile.uid,name:myProfile.name,avatar:myProfile.avatar,role:getMyRole(),mic:prev.mic??true,locked:false,coins:prev.coins||0,started:prev.started||Date.now()});onDisconnect(seatRef).remove()}
+    logActivity('join',null);
+}
+window.addEventListener('beforeunload',()=>{if(!myProfile)return;const idx=state.seats.findIndex(s=>s&&s.uid===myProfile.uid);if(idx>-1)remove(ref(db,`${BASE}/seats/${idx}`))});
+
+onValue(ref(db,`${BASE}/info`),snap=>{
+    const data=snap.val();
+    if(data){state.roomName=data.name||'HOUR FM';state.roomLogo=data.logo||null;state.roomId=data.id||ROOM_ID;state.owner=data.owner||null;state.topic=data.topic||'🎧FM 📻➡️SP ✨🎤Room 🎵'}
+    else{state.roomName='HOUR FM';state.roomLogo=null;state.topic='🎧FM 📻➡️SP ✨🎤Room 🎵'}
+    renderBranding();renderMessageFeed();
+});
+
+onValue(ref(db,`${BASE}/seats`),snap=>{
+    const data=snap.val()||{};
+    state.seats=Array.from({length:10},(_,i)=>data[i]||null);
+    renderSeats();updateMicButton();
+});
+
+onValue(ref(db,`${BASE}/listeners`),snap=>{
+    const data=snap.val()||{};
+    state.listeners=Object.values(data).sort((a,b)=>(a.joined||0)-(b.joined||0));
+    $('userCountBadge').textContent=state.listeners.length;
+    $('listenerTotalCount').textContent=state.listeners.length;
+    renderListeners();renderMembers();updateRoomPoints();
+});
+
+onValue(query(ref(db,`${BASE}/messages`),limitToLast(100)),snap=>{
+    const data=snap.val()||{};
+    state.messages=Object.entries(data).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.ts||0)-(b.ts||0));
+    renderMessageFeed();markMessageRead();
+});
+
+onValue(query(ref(db,`${BASE}/activity`),limitToLast(1)),snap=>{
+    const data=snap.val();if(!data)return;
+    const [ ,latest]=Object.entries(data)[0];
+    if(!latest||latest.ts<=lastActTs)return;
+    if(latest.uid===(myProfile&&myProfile.uid)){lastActTs=latest.ts;return}
+    lastActTs=latest.ts;
+    showActivity(latest);
+});
+
+/* ============ REACTIONS (NEW) ============ */
+onValue(query(ref(db,`${BASE}/reactions`),limitToLast(10)),snap=>{
+    const data=snap.val();if(!data)return;
+    const entries=Object.entries(data).sort((a,b)=>(a[1].ts||0)-(b[1].ts||0));
+    entries.forEach(([k,r])=>{
+        if(!r||!r.ts)return;
+        if(r.ts<=lastSeenReactTs)return;
+        lastSeenReactTs=r.ts;
+        // skip if this reaction just pushed by me (I already showed it locally)
+        // Actually we want everyone including self to see — so show always
+        showSeatReaction(r.seat,r.code,r.src);
+    });
+});
+
+/* ============ ROLE HELPERS ============ */
+function getMyRole(){if(!myProfile)return null;if(state.owner&&state.owner.uid===myProfile.uid)return 'owner';const me=state.listeners.find(x=>x.uid===myProfile.uid);return (me&&me.role)||'member'}
+function isOwner(){return getMyRole()==='owner'}
+function isAdminOrOwner(){const r=getMyRole();return r==='owner'||r==='admin'}
+function getRoleOf(uid){if(state.owner&&state.owner.uid===uid)return 'owner';const u=state.listeners.find(x=>x.uid===uid);return (u&&u.role)||'member'}
+function roleBadgeHTML(role,size){if(role==='owner')return `<i class="fa-solid fa-crown" style="color:#ffb400;font-size:${size}px"></i>`;if(role==='admin')return `<i class="fa-solid fa-shield-halved" style="color:#22c55e;font-size:${size}px"></i>`;return ''}
+function roleBorderClass(r){return r==='owner'?'owner-border':(r==='admin'?'admin-border':'')}
+function roleBadgeClass(r,isMe){if(isMe)return 'me';if(r==='owner')return 'owner';if(r==='admin')return 'admin';return 'member'}
+function roleLabel(r,isMe){if(isMe)return 'You';if(r==='owner')return 'Owner';if(r==='admin')return 'Admin';return 'Member'}
+
+/* ============ ACTIVITY ============ */
+function logActivity(action,seat,extra={}){
+    if(!myProfile)return;
+    const payload={uid:myProfile.uid,name:myProfile.name,avatar:myProfile.avatar,action,seat,ts:Date.now(),...extra};
+    push(ref(db,`${BASE}/activity`),payload);
+    lastActTs=payload.ts;
+    showActivity({...payload,self:true});
+}
+function showActivity(a){
+    const ICONS={takeMic:'🎤',leaveMic:'🚪',lockMic:'🔒',unlockMic:'🔓',mute:'🔇',unmute:'🔊',join:'👋',leave:'👋',roomEdit:'✏️',makeAdmin:'👑',removeAdmin:'⭐',kick:'👢',heart:'❤️',react:'😊'};
+    const LABELS={takeMic:'মাইকে উঠেছেন',leaveMic:'সিট ছেড়েছেন',lockMic:'লক করেছেন',unlockMic:'আনলক করেছেন',mute:'মিউট করেছেন',unmute:'আনমিউট করেছেন',join:'রুমে ঢুকলেন',leave:'রুম ছাড়লেন',roomEdit:'রুম এডিট করলেন',makeAdmin:'এডমিন বানালেন',removeAdmin:'এডমিন সরালেন',kick:'কিক করেছেন',heart:'গিফট পেয়েছেন',react:'রিঅ্যাক্ট করেছেন'};
+    const el=document.createElement('div');el.className='activity-item';
+    el.innerHTML=`<span style="margin-right:5px">${ICONS[a.action]||'✨'}</span>${esc(a.name)} ${esc(LABELS[a.action]||a.action)}${(a.seat!==undefined&&a.seat!==null)?` #${a.seat+1}`:''}${a.target?' '+esc(a.target):''}`;
+    $('activityStrip').appendChild(el);
+    setTimeout(()=>{el.style.transition='opacity .4s, transform .4s';el.style.opacity='0';el.style.transform='translateY(-6px)';setTimeout(()=>el.remove(),400)},5000);
+    while($('activityStrip').children.length>5)$('activityStrip').firstChild.remove();
+}
+
+/* ============ MESSAGE FEED ============ */
+function renderMessageFeed(){
+    $('topicText').textContent=state.topic||'কোনো টপিক নেই';
+    const list=$('messagesList');
+    if(!state.messages.length){list.innerHTML=`<div class="msg-empty">এখনো কোনো মেসেজ নেই...</div>`;return}
+    list.innerHTML=state.messages.slice(-60).map(m=>{
+        if(m.type==='gift')return `<div class="msg-item gift-msg">🎁 <span class="msg-name">${esc(m.name)}</span>${esc(m.text)}</div>`;
+        return `<div class="msg-item"><span class="msg-name">${esc(m.name)}</span>${esc(m.text)}</div>`;
+    }).join('');
+    $('messageFeed').scrollTop=$('messageFeed').scrollHeight;
+}
+
+let lastSeenMsgTs=0;
+function markMessageRead(){
+    const latest=state.messages[state.messages.length-1];
+    const btn=$('msgBtn');if(!btn)return;
+    const sheetOpen=$('chatSheet').classList.contains('active');
+    if(sheetOpen){btn.classList.remove('has-unread');lastSeenMsgTs=latest?latest.ts:Date.now();return}
+    if(latest&&latest.uid!==(myProfile&&myProfile.uid)&&latest.ts>lastSeenMsgTs){btn.classList.add('has-unread')}else{btn.classList.remove('has-unread')}
+}
+
+window.openMessageInput=()=>{
+    if(!requireLogin())return;
+    closeSheet();
+    $('sheetBackdrop').classList.add('active');
+    $('chatSheet').classList.add('active');
+    $('msgBtn').classList.remove('has-unread');
+    lastSeenMsgTs=Date.now();
+    setTimeout(()=>$('chatInput').focus(),250);
+};
+window.sendChatMessage=async()=>{
+    if(!myProfile)return;
+    const text=$('chatInput').value.trim();if(!text)return;
+    $('chatInput').value='';
+    await push(ref(db,`${BASE}/messages`),{uid:myProfile.uid,name:myProfile.name,avatar:myProfile.avatar,text,type:'text',ts:Date.now()});
+    closeSheet();
+};
+window.editTopic=async()=>{
+    if(!requireLogin())return;
+    if(!isAdminOrOwner()){toastMsg('শুধু Owner/Admin পারবে');return}
+    const next=prompt('রুমের টপিক:',state.topic||'');
+    if(next===null)return;
+    const topic=next.trim()||'🎧FM 📻➡️SP ✨🎤Room 🎵';
+    await update(ref(db,`${BASE}/info`),{topic});
+    toastMsg('টপিক আপডেট হয়েছে ✅');
+};
+window.openEmptySheet=(name)=>{closeSheet();$('emptySheetTitle').textContent=name;$('emptySheetBody').textContent=name+' ফিচারটি শীঘ্রই যোগ করা হবে...';$('sheetBackdrop').classList.add('active');$('emptySheet').classList.add('active')};
+
+/* ============ MIC ============ */
+window.toggleMyMicFromBar=async()=>{
+    if(!requireLogin())return;
+    const idx=state.seats.findIndex(s=>s&&s.uid===myProfile.uid);
+    if(idx===-1){toastMsg('আগে একটা সিটে উঠুন 🎤');return}
+    const on=!state.seats[idx].mic;
+    await update(ref(db,`${BASE}/seats/${idx}`),{mic:on});
+    logActivity(on?'unmute':'mute',idx);
+    toastMsg(on?'আনমিউট 🔊':'মিউট 🔇');
+};
+function updateMicButton(){
+    const btn=$('micToggleBtn');if(!btn)return;
+    if(!myProfile){btn.classList.remove('mic-on','mic-off');btn.innerHTML='<i class="fa-solid fa-microphone"></i>';return}
+    const idx=state.seats.findIndex(s=>s&&s.uid===myProfile.uid);
+    if(idx===-1){btn.classList.remove('mic-on','mic-off');btn.innerHTML='<i class="fa-solid fa-microphone"></i>';return}
+    const on=state.seats[idx].mic;
+    btn.classList.toggle('mic-on',on);btn.classList.toggle('mic-off',!on);
+    btn.innerHTML=on?'<i class="fa-solid fa-microphone"></i>':'<i class="fa-solid fa-microphone-slash"></i>';
+}
+
+/* ============ BRANDING ============ */
+function brandInner(){
+    if(state.roomLogo)return `<img src="${state.roomLogo}" alt="">`;
+    const parts=esc(state.roomName||'HOUR FM').split(/\s+/).slice(0,2).join('<br>');
+    return `<span class="cassette-text">${parts}</span>`;
+}
+function renderBranding(){
+    $('room-logo-preview').innerHTML=brandInner();
+    $('room-name-display').textContent=state.roomName;
+    $('room-logo-modal-container').innerHTML=brandInner();
+    $('room-name-modal-display').textContent=state.roomName;
+    $('room-id-modal').textContent='ID:'+state.roomId;
+    const oi=$('owner-info-modal');
+    if(state.owner&&state.owner.name){oi.style.display='flex';oi.innerHTML=`<img src="${state.owner.avatar||GUEST_AVATAR}"><div class="oi-text"><div class="oi-name">${esc(state.owner.name)}</div><div class="oi-uid">UID: ${esc(state.owner.uid)}</div></div><i class="fa-solid fa-crown oi-crown"></i>`}
+    else oi.style.display='none';
+}
+
+/* ============ SEATS ============ */
+function renderSeats(){
+    $('seatsGrid').innerHTML=state.seats.map((s,i)=>{
+        let inner,cls='seat-avatar',badge='',roleBadge='';
+        if(!s){inner=`<i class="fa-solid fa-couch"></i>`}
+        else if(s.locked&&!s.uid){cls+=' locked';inner=`<i class="fa-solid fa-lock"></i>`}
+        else{
+            cls+=' occupied';
+            if(myProfile&&s.uid===myProfile.uid)cls+=' is-me';
+            const r=s.role||getRoleOf(s.uid);
+            if(r==='owner'){cls+=' is-owner';roleBadge=`<span class="role-badge-seat owner"><i class="fa-solid fa-crown"></i></span>`}
+            else if(r==='admin'){cls+=' is-admin';roleBadge=`<span class="role-badge-seat admin"><i class="fa-solid fa-shield-halved"></i></span>`}
+            inner=`<img src="${s.avatar||GUEST_AVATAR}" alt="">`;
+            if(s.locked)badge=`<span class="lock-badge"><i class="fa-solid fa-lock"></i></span>`;
+            else badge=`<span class="mic-badge ${s.mic?'on':'off'}"><i class="fa-solid fa-microphone${s.mic?'':'-slash'}"></i></span>`;
+        }
+        const label=s&&s.name?esc(s.name):(s&&s.locked?'Locked':(i+1));
+        const coins=(s&&s.coins)?s.coins:0;
+        return `<div class="seat" data-seat="${i}" data-uid="${s&&s.uid?esc(s.uid):''}">
+            <div class="seat-reaction-layer" id="reactLayer${i}"></div>
+            <div class="${cls}" onclick="openSeatSheet(${i})">${roleBadge}${inner}${badge}</div>
+            <div class="seat-meta">
+                <div class="seat-number ${s&&s.name?'taken':''}">${label}</div>
+                <div class="seat-coins"><i class="fa-solid fa-gem"></i> ${coins.toLocaleString('en-IN')}</div>
+            </div>
+        </div>`;
+    }).join('');
+    updateRoomPoints();
+}
+function getTotalRoomCoins(){return state.seats.reduce((s,x)=>s+(x&&x.coins?x.coins:0),0)}
+function updateRoomPoints(){$('roomPointsVal').textContent=getTotalRoomCoins().toLocaleString('en-IN')}
+
+/* ============ SEAT REACTION ANIMATION (NEW) ============ */
+function showSeatReaction(seatIndex, code, src){
+    if(seatIndex<0||seatIndex>=10)return;
+    const layer=document.getElementById('reactLayer'+seatIndex);
+    if(!layer)return;
+
+    // burst ring
+    const burst=document.createElement('div');
+    burst.className='seat-react-burst';
+    layer.appendChild(burst);
+    setTimeout(()=>burst.remove(),1000);
+
+    // floating emoji (multiple)
+    for(let i=0;i<3;i++){
+        setTimeout(()=>{
+            const img=document.createElement('img');
+            img.className='seat-react';
+            img.src=src;
+            img.onerror=()=>{ // fallback if CDN fails
+                img.replaceWith(Object.assign(document.createElement('div'),{className:'seat-react',textContent:emojiFallback(code),style:'font-size:28px;text-align:center'}));
+            };
+            img.style.animationDelay=(i*90)+'ms';
+            layer.appendChild(img);
+            setTimeout(()=>img.remove(),3000);
+        },i*90);
+    }
+    if(navigator.vibrate)navigator.vibrate(8);
+}
+function emojiFallback(code){
+    // simple fallback map
+    const map={'1f602':'😂','1f60d':'😍','1f62d':'😭','2764_fe0f':'❤️','1f525':'🔥','1f44f':'👏','1f44d':'👍','2728':'✨','1f389':'🎉','1f970':'🥰'};
+    return map[code]||'😊';
+}
+
+/* ============ SEAT SHEET ============ */
+function showSheetOptions(title,options){
+    $('sheetTitle').textContent=title;
+    $('sheetOptions').innerHTML=options.map((o,k)=>`<div class="sheet-option ${o.danger?'danger':''} ${o.cls||''}" data-k="${k}"><span class="opt-icon"><i class="fa-solid ${o.icon}"></i></span><span class="opt-label">${o.label}</span><i class="fa-solid fa-chevron-right opt-arrow"></i></div>`).join('');
+    $('sheetOptions').querySelectorAll('.sheet-option').forEach(el=>el.addEventListener('click',()=>options[+el.dataset.k].action()));
+    $('sheetBackdrop').classList.add('active');
+    $('seatSheet').classList.add('active');
+}
+
+window.openSeatSheet=(i)=>{
+    if(!requireLogin())return;
+    const s=state.seats[i];let title,options;
+    if(!s){
+        title=`Seat #${i+1}`;
+        options=[{icon:'fa-microphone-lines',label:'Take the mic',action:()=>takeMic(i)},{icon:'fa-user-plus',label:'Invite speakers',action:()=>{closeSheet();toggleListenersModal()}},{icon:'fa-lock',label:'Lock the mic',cls:'gold',action:()=>lockMic(i)}];
+    }else if(s.locked&&!s.uid){
+        title=`Seat #${i+1} (Locked)`;
+        options=[{icon:'fa-microphone-lines',label:'Take the mic',action:()=>takeMic(i)},{icon:'fa-lock-open',label:'Unlock the mic',cls:'green',action:()=>unlockMic(i)}];
+    }else if(s.locked&&s.uid&&s.uid!==(myProfile&&myProfile.uid)){
+        title=s.name+' (Locked)';
+        options=[{icon:'fa-lock-open',label:'Unlock the mic',cls:'green',action:()=>unlockMic(i)}];
+        if(isAdminOrOwner())options.push({icon:'fa-user-minus',label:'Kick from mic',danger:true,action:()=>kickSeat(i,s.name)});
+    }else if(s.uid===myProfile.uid){
+        title='My Seat';
+        options=[{icon:'fa-user',label:'View profile',action:()=>{closeSheet();setTimeout(()=>openUserProfile(myProfile.uid),120)}},{icon:'fa-gift',label:'Send gift (self)',cls:'purple',action:()=>{closeSheet();setTimeout(()=>openWebSheet('gift',myProfile.uid,myProfile.name),180)}},{icon:'fa-microphone-slash',label:'Leave the mic',danger:true,action:()=>leaveMic(i)}];
+    }else{
+        closeSheet();setTimeout(()=>openUserProfile(s.uid),120);return;
+    }
+    showSheetOptions(title,options);
+};
+
+window.closeSheet=()=>{
+    $('sheetBackdrop').classList.remove('active');
+    ['seatSheet','chatSheet','emptySheet','permissionSheet','giftPickerSheet'].forEach(id=>$(id).classList.remove('active'));
+    document.body.classList.remove('perm-over');
+};
+
+async function takeMic(i){
+    if(!requireLogin())return;
+    const prev=state.seats[i];
+    if(prev&&prev.locked&&prev.uid&&prev.uid!==myProfile.uid&&!isAdminOrOwner()){toastMsg('সিটটি লক করা 🔒');closeSheet();return}
+    const old=state.seats.findIndex(s=>s&&s.uid===myProfile.uid);
+    if(old>-1&&old!==i)await remove(ref(db,`${BASE}/seats/${old}`));
+    const seatRef=ref(db,`${BASE}/seats/${i}`);
+    await set(seatRef,{uid:myProfile.uid,name:myProfile.name,avatar:myProfile.avatar,role:getMyRole(),mic:true,locked:false,coins:(prev&&prev.coins)||0,started:Date.now()});
+    onDisconnect(seatRef).remove();
+    logActivity('takeMic',i);closeSheet();
+}
+async function leaveMic(i){
+    if(!state.seats[i]||state.seats[i].uid!==myProfile.uid)return;
+    await remove(ref(db,`${BASE}/seats/${i}`));
+    logActivity('leaveMic',i);closeSheet();
+}
+async function lockMic(i){
+    if(!isAdminOrOwner()){toastMsg('শুধু Owner/Admin পারবে');closeSheet();return}
+    const s=state.seats[i];
+    if(!s)await set(ref(db,`${BASE}/seats/${i}`),{locked:true,by:myProfile.name});
+    else await update(ref(db,`${BASE}/seats/${i}`),{locked:true});
+    logActivity('lockMic',i);closeSheet();
+}
+async function unlockMic(i){
+    if(!isAdminOrOwner()){toastMsg('শুধু Owner/Admin পারবে');closeSheet();return}
+    const s=state.seats[i];
+    if(!s||!s.locked)return;
+    if(s.uid)await update(ref(db,`${BASE}/seats/${i}`),{locked:false});
+    else await remove(ref(db,`${BASE}/seats/${i}`));
+    logActivity('unlockMic',i);closeSheet();
+}
+async function kickSeat(i,targetName){
+    if(!isAdminOrOwner()){toastMsg('শুধু Owner/Admin পারবে');closeSheet();return}
+    await remove(ref(db,`${BASE}/seats/${i}`));
+    logActivity('kick',i,{target:targetName});closeSheet();
+    toastMsg(`👢 ${targetName} কে কিক করা হয়েছে`);
+}
+
+/* ============ LISTENERS / MEMBERS ============ */
+function renderListeners(){
+    $('listenerList').innerHTML=state.listeners.length?state.listeners.map(u=>{
+        const isMe=myProfile&&u.uid===myProfile.uid;
+        const r=u.role||'member';
+        const invited=invitedUsers.has(u.uid);
+        return `<div class="listener-user-card">
+            <img src="${u.avatar||GUEST_AVATAR}" class="listener-user-avatar ${roleBorderClass(r)}">
+            <div style="flex:1;min-width:0">
+                <div class="listener-user-name">${esc(u.name)} ${roleBadgeHTML(r,12)}</div>
+                <div class="listener-user-sub">${esc(u.email||u.uid)}</div>
+            </div>
+            ${isMe?`<span class="listener-user-role ${roleBadgeClass(r,isMe)}">${roleLabel(r,isMe)}</span>`:`<button class="invite-btn ${invited?'invited':''}" data-uid="${esc(u.uid)}" onclick="inviteUser(this.dataset.uid)"><i class="fa-solid ${invited?'fa-check':'fa-paper-plane'}"></i> ${invited?'Invited':'Invite'}</button>`}
+        </div>`;
+    }).join(''):`<div class="empty-msg">এখনো কেউ অনলাইনে নেই</div>`;
+}
+window.inviteUser=(uid)=>{
+    if(!myProfile){toastMsg('প্রথমে লগইন করুন');return}
+    const u=state.listeners.find(x=>x.uid===uid);if(!u)return;
+    if(invitedUsers.has(uid)){toastMsg('ইতিমধ্যে ইনভাইট করা হয়েছে ✅');return}
+    invitedUsers.add(uid);renderListeners();
+    toastMsg(`📨 ${u.name} কে রুমে ইনভাইট পাঠানো হয়েছে`);
+};
+
+window.renderMembers=()=>{
+    const q=($('memberSearch').value||'').trim().toLowerCase();
+    const list=state.listeners.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||u.uid.toLowerCase().includes(q));
+    $('userList').innerHTML=list.length?list.map(u=>{
+        const isMe=myProfile&&u.uid===myProfile.uid;
+        const r=u.role||'member';
+        return `<div class="user-card" onclick="openUserActionSheet('${esc(u.uid)}')">
+            <div class="user-avatar-box">
+                <img src="${u.avatar||GUEST_AVATAR}" class="user-avatar ${roleBorderClass(r)}">
+                <div class="user-badge ${roleBadgeClass(r,isMe)}">${roleLabel(r,isMe)}</div>
+            </div>
+            <div class="user-details">
+                <div class="user-name-row">${esc(u.name)}${r==='owner'?'<i class="fa-solid fa-crown role-crown"></i>':''}${r==='admin'?'<i class="fa-solid fa-shield-halved role-shield"></i>':''}</div>
+                <div class="user-desc"><span class="role-dot ${r}"></span>${esc(u.email||u.uid)}</div>
+            </div>
+            <i class="fa-solid fa-user" style="color:#00E5FF;font-size:18px"></i>
+        </div>`;
+    }).join(''):`<div class="empty-msg">কোনো মেম্বার পাওয়া যায়নি</div>`;
+    $('memberCounter').textContent=`${state.listeners.length}/4000`;
+};
+window.clearSearch=()=>{$('memberSearch').value='';renderMembers()};
+
+/* ============ PERMISSION ============ */
+window.openUserActionSheet=(uid)=>{
+    if(!myProfile){toastMsg('প্রথমে লগইন করুন');showLogin();return}
+    const target=state.listeners.find(u=>u.uid===uid);if(!target)return;
+    const isMe=uid===myProfile.uid;
+    if(isMe){closeModal('memberModal');setTimeout(()=>openUserProfile(uid),150);return}
+    currentPermUid=uid;
+    const r=target.role||'member';
+    $('permAvatar').src=target.avatar||GUEST_AVATAR;
+    $('permName').textContent=target.name;
+    $('optAdmin').classList.toggle('selected',r==='admin');
+    $('optMember').classList.toggle('selected',r==='member');
+    const canManage=isOwner();
+    $('optAdmin').style.pointerEvents=canManage?'':'none';
+    $('optMember').style.pointerEvents=canManage?'':'none';
+    $('optAdmin').style.opacity=canManage?'':'.45';
+    $('optMember').style.opacity=canManage?'':'.45';
+    document.querySelector('#permissionSheet .perm-remove-btn').style.display=canManage?'':'none';
+    closeSheet();document.body.classList.add('perm-over');
+    $('sheetBackdrop').classList.add('active');
+    $('permissionSheet').classList.add('active');
+};
+window.setPermissionRole=async(role)=>{
+    if(!currentPermUid)return;
+    if(!isOwner()){toastMsg('শুধু Owner পারবে');return}
+    const target=state.listeners.find(u=>u.uid===currentPermUid);if(!target)return;
+    const oldRole=target.role||'member';
+    if(oldRole===role){toastMsg(`ইতিমধ্যে ${role==='admin'?'Admin':'Member'} ✅`);return}
+    await update(ref(db,`${BASE}/listeners/${currentPermUid}`),{role});
+    const seatIdx=state.seats.findIndex(s=>s&&s.uid===currentPermUid);
+    if(seatIdx>-1)await update(ref(db,`${BASE}/seats/${seatIdx}`),{role});
+    logActivity(role==='admin'?'makeAdmin':'removeAdmin',seatIdx>-1?seatIdx:null,{target:target.name});
+    toastMsg(role==='admin'?`👑 ${target.name} এখন Admin`:`⭐ ${target.name} এখন Member`);
+};
+window.removeUserFromRoom=async()=>{
+    if(!currentPermUid)return;
+    if(!isOwner()){toastMsg('শুধু Owner পারবে');return}
+    const target=state.listeners.find(u=>u.uid===currentPermUid);if(!target)return;
+    if(!confirm(`${target.name} কে রুম থেকে সরিয়ে দেবেন?`))return;
+    const seatIdx=state.seats.findIndex(s=>s&&s.uid===currentPermUid);
+    if(seatIdx>-1)await remove(ref(db,`${BASE}/seats/${seatIdx}`));
+    await remove(ref(db,`${BASE}/listeners/${currentPermUid}`));
+    logActivity('kick',seatIdx>-1?seatIdx:null,{target:target.name});
+    toastMsg(`🚪 ${target.name} কে রুম থেকে সরানো হয়েছে`);
+    currentPermUid=null;closeSheet();
+};
+window.openCurrentProfileFromSheet=()=>{if(!currentPermUid)return;const uid=currentPermUid;closeSheet();setTimeout(()=>openUserProfile(uid),180)};
+window.closeModal=(id)=>$(id).classList.remove('active');
+window.toggleMemberModal=()=>{const m=$('memberModal');m.classList.contains('active')?closeModal('memberModal'):m.classList.add('active')};
+window.toggleListenersModal=()=>{const m=$('listenersModal');m.classList.contains('active')?closeModal('listenersModal'):m.classList.add('active')};
+
+/* ============ USER PROFILE ============ */
+window.openUserProfile=(uid)=>{
+    const u=state.listeners.find(x=>x.uid===uid);if(!u){toastMsg('ইউজার পাওয়া যায়নি');return}
+    currentProfileUid=uid;
+    const isMe=myProfile&&u.uid===myProfile.uid;
+    const r=u.role||'member';
+    $('profileCover').src=u.cover||u.avatar||GUEST_AVATAR;
+    $('profileAvatar').src=u.avatar||GUEST_AVATAR;
+    $('profileAvatar').className='profile-avatar '+roleBorderClass(r);
+    let nameHTML=esc(u.name);
+    if(r==='owner')nameHTML+=' <i class="fa-solid fa-crown owner-crown"></i>';
+    else if(r==='admin')nameHTML+=' <i class="fa-solid fa-shield-halved admin-shield"></i>';
+    $('profileName').innerHTML=nameHTML;
+    $('profileUid').innerHTML=`<i class="fa-solid fa-id-badge" style="font-size:11px"></i> UID: ${esc(u.moiId||u.uid)}`;
+    $('profileFollowers').textContent=(u.followers||0).toLocaleString();
+    updateFollowBtn(uid);
+    const followBtn=$('profileFollowBtn');const chatBtn=document.querySelector('.profile-btn.chat-btn');
+    if(isMe){followBtn.style.display='none';chatBtn.style.display='none'}
+    else{followBtn.style.display='';chatBtn.style.display=''}
+    const bottomBar=$('profileBottomBar');const canMod=isAdminOrOwner();
+    bottomBar.querySelectorAll('.pbar-icon')[0].style.display=isMe?'none':'';
+    bottomBar.querySelectorAll('.pbar-icon')[2].style.display=(isMe||!canMod)?'none':'';
+    $('userProfileModal').classList.add('active');
+};
+window.closeUserProfile=()=>{$('userProfileModal').classList.remove('active');currentProfileUid=null};
+
+function updateFollowBtn(uid){
+    const btn=$('profileFollowBtn');if(!btn)return;
+    const following=followingUsers.has(uid);
+    btn.className='profile-btn follow-btn'+(following?' following':'');
+    btn.innerHTML=following?'<i class="fa-solid fa-check"></i><span>Following</span>':'<i class="fa-solid fa-plus"></i><span>Follow</span>';
+}
+window.toggleFollowCurrent=async()=>{
+    if(!requireLogin())return;
+    if(!currentProfileUid)return;
+    const isMe=myProfile&&currentProfileUid===myProfile.uid;if(isMe)return;
+    const u=state.listeners.find(x=>x.uid===currentProfileUid);if(!u)return;
+    const willFollow=!followingUsers.has(currentProfileUid);
+    if(willFollow){followingUsers.add(currentProfileUid);await runTransaction(ref(db,`${BASE}/listeners/${currentProfileUid}/followers`),f=>(f||0)+1);toastMsg(`⭐ ${u.name} কে ফলো করা হয়েছে`)}
+    else{followingUsers.delete(currentProfileUid);await runTransaction(ref(db,`${BASE}/listeners/${currentProfileUid}/followers`),f=>Math.max(0,(f||1)-1));toastMsg(`❌ ${u.name} কে আনফলো করা হয়েছে`)}
+    updateFollowBtn(currentProfileUid);
+};
+
+window.profileChatPlaceholder=()=>{};
+window.profileGiftCurrent=()=>{
+    if(!currentProfileUid)return;
+    const u=state.listeners.find(x=>x.uid===currentProfileUid);if(!u)return;
+    if(myProfile&&u.uid===myProfile.uid){toastMsg('নিজেকে গিফট পাঠানো যাবে না');return}
+    closeUserProfile();setTimeout(()=>openWebSheet('gift',u.uid,u.name),220);
+};
+window.profileActionMute=async()=>{
+    if(!currentProfileUid)return;
+    const seatIdx=state.seats.findIndex(s=>s&&s.uid===currentProfileUid);
+    if(seatIdx===-1){toastMsg('ইউজার মাইকে নেই');return}
+    const on=!state.seats[seatIdx].mic;
+    await update(ref(db,`${BASE}/seats/${seatIdx}`),{mic:on});
+    logActivity(on?'unmute':'mute',seatIdx,{target:state.seats[seatIdx].name});
+    toastMsg(on?`আনমিউট 🔊`:`মিউট 🔇`);
+};
+window.profileActionLeave=async()=>{
+    if(!currentProfileUid)return;
+    const seatIdx=state.seats.findIndex(s=>s&&s.uid===currentProfileUid);
+    if(seatIdx===-1){toastMsg('ইউজার মাইকে নেই');return}
+    const name=state.seats[seatIdx].name;
+    await remove(ref(db,`${BASE}/seats/${seatIdx}`));
+    logActivity('leaveMic',seatIdx,{target:name});
+    toastMsg(`${name} কে মাইক থেকে নামানো হয়েছে`);
+    closeUserProfile();
+};
+window.profileActionKick=async()=>{
+    if(!currentProfileUid)return;
+    if(!isAdminOrOwner()){toastMsg('শুধু Owner/Admin পারবে');return}
+    const u=state.listeners.find(x=>x.uid===currentProfileUid);if(!u)return;
+    const seatIdx=state.seats.findIndex(s=>s&&s.uid===currentProfileUid);
+    if(seatIdx>-1)await remove(ref(db,`${BASE}/seats/${seatIdx}`));
+    await remove(ref(db,`${BASE}/listeners/${currentProfileUid}`));
+    logActivity('kick',seatIdx>-1?seatIdx:null,{target:u.name});
+    toastMsg(`👢 ${u.name} কে রুম থেকে কিক করা হয়েছে`);
+    closeUserProfile();
+};
+window.openProfileMoreSheet=()=>{
+    if(!currentProfileUid)return;
+    const u=state.listeners.find(x=>x.uid===currentProfileUid);if(!u)return;
+    const isMe=myProfile&&u.uid===myProfile.uid;
+    const options=[];
+    options.push({icon:'fa-copy',label:'Copy UID',cls:'cyan',action:()=>{navigator.clipboard?.writeText(u.moiId||u.uid);toastMsg('UID কপি হয়েছে ✅');closeSheet()}});
+    if(!isMe&&isAdminOrOwner())options.push({icon:'fa-user-minus',label:'Kick from room',danger:true,action:()=>profileActionKick()});
+    showSheetOptions('Options',options);
+};
+
+/* ============ ROOM EDIT ============ */
+window.openEditRoom=()=>{
+    if(!requireLogin())return;
+    if(!isAdminOrOwner()){toastMsg('শুধু Owner/Admin পারবে');return}
+    pendingLogo=state.roomLogo;
+    $('roomNameInput').value=state.roomName;
+    $('roomIdInput').value=state.roomId;
+    const preview=$('room-logo-edit-preview');
+    if(state.roomLogo)preview.innerHTML=`<img src="${state.roomLogo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    else preview.innerHTML=`<span class="cassette-text">${esc(state.roomName).split(/\s+/).slice(0,2).join('<br>')}</span>`;
+    $('editRoomModal').classList.add('active');
+};
+window.previewRoomImage=(event)=>{
+    const file=event.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+        $('cropImage').src=ev.target.result;
+        $('cropModal').classList.add('active');
+        if(cropper){cropper.destroy();cropper=null}
+        setTimeout(()=>{cropper=new Cropper($('cropImage'),{aspectRatio:1,viewMode:1,autoCropArea:1,background:false,guides:false,center:false,highlight:false})},120);
+    };
+    reader.readAsDataURL(file);event.target.value='';
+};
+window.cancelCrop=()=>{if(cropper){cropper.destroy();cropper=null}closeModal('cropModal')};
+window.applyCrop=()=>{
+    if(!cropper)return;
+    const canvas=cropper.getCroppedCanvas({width:300,height:300});
+    const dataUrl=canvas.toDataURL('image/jpeg',0.82);
+    pendingLogo=dataUrl;
+    $('room-logo-edit-preview').innerHTML=`<img src="${dataUrl}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    cropper.destroy();cropper=null;closeModal('cropModal');
+};
+window.saveRoomProfile=async()=>{
+    if(!requireLogin())return;
+    const name=$('roomNameInput').value.trim();
+    if(!name){toastMsg('নাম খালি রাখা যাবে না');return}
+    const existing=(await get(ref(db,`${BASE}/info`))).val()||{};
+    await update(ref(db,`${BASE}/info`),{name,logo:pendingLogo||null,id:ROOM_ID,country:existing.country||'Unknown',owner:existing.owner||(myProfile?{uid:myProfile.uid,name:myProfile.name,avatar:myProfile.avatar}:null),topic:existing.topic||state.topic,createdAt:existing.createdAt||Date.now(),updatedAt:Date.now(),updatedBy:myProfile?.name||'Unknown'});
+    logActivity('roomEdit',null);
+    closeModal('editRoomModal');
+    toastMsg('সেভ হয়েছে ✅');
+};
+
+/* ============ EXIT ============ */
+window.exitRoom=async()=>{
+    if(!confirm('সাইন আউট করতে চান?'))return;
+    if(myProfile){const idx=state.seats.findIndex(s=>s&&s.uid===myProfile.uid);if(idx>-1)await remove(ref(db,`${BASE}/seats/${idx}`));if(myListenerRef)await remove(myListenerRef)}
+    await signOut(auth);
+    try{localStorage.removeItem('moi_user')}catch(e){}
+    location.reload();
+};
+
+/* ============ TOAST ============ */
+let toastTimer;
+function toastMsg(msg){
+    const t=$('toastBox');t.textContent=msg;
+    const sheetOpen=document.querySelector('.bottom-sheet.active, .modal-overlay.active, #webSheet.active');
+    t.classList.toggle('top-mode',!!sheetOpen);
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+window.toastMsg=toastMsg;
+
+/* ============ WEB SHEET ============ */
+let wsCurrentKey=null,wsDragging=false,wsStartY=0,wsStartH=0;
+
+window.openWebSheet=(key,targetUid=null,targetName=null)=>{
+    if(!requireLogin())return;
+    const baseUrl=WEB_LINKS[key];
+    if(!baseUrl){openEmptySheet(WEB_TITLES[key]||key);return}
+    wsCurrentKey=key;
+    let url=baseUrl;
+    if(key==='gift'){
+        const u=new URL(baseUrl);
+        if(targetUid)u.searchParams.set('targetUid',targetUid);
+        if(targetName)u.searchParams.set('targetName',targetName);
+        u.searchParams.set('balance',myProfile?(myProfile.diamonds||1000):1000);
+        url=u.toString();
+        currentGiftTarget={uid:targetUid||'',name:targetName||''};
+    }
+    const sheet=$('webSheet'),backdrop=$('webSheetBackdrop'),frame=$('webSheetFrame'),loading=$('webSheetLoading'),title=$('webSheetTitle');
+    title.textContent=WEB_TITLES[key]||key;
+    if(key==='gift'&&targetName)title.textContent=`Gift → ${targetName}`;
+    sheet.classList.remove('fullscreen');sheet.style.height='';
+    loading.classList.remove('hidden');
+    frame.src=url;
+    frame.onload=()=>loading.classList.add('hidden');
+    backdrop.classList.add('active');
+    requestAnimationFrame(()=>sheet.classList.add('active'));
+};
+
+window.closeWebSheet=()=>{
+    const sheet=$('webSheet'),frame=$('webSheetFrame');
+    sheet.classList.remove('active','fullscreen','dragging');
+    sheet.style.height='';
+    $('webSheetBackdrop').classList.remove('active');
+    setTimeout(()=>{frame.src='about:blank'},320);
+    wsCurrentKey=null;
+};
+
+function initWebSheetDrag(){
+    const header=$('webSheetHeader'),sheet=$('webSheet'),backdrop=$('webSheetBackdrop');
+    header.addEventListener('touchstart',(e)=>{
+        if(e.target.closest('.web-sheet-close'))return;
+        wsDragging=true;wsStartY=e.touches[0].clientY;wsStartH=sheet.offsetHeight;sheet.classList.add('dragging');
+    },{passive:true});
+    document.addEventListener('touchmove',(e)=>{
+        if(!wsDragging)return;
+        const dy=wsStartY-e.touches[0].clientY;let newH=wsStartH+dy;
+        const maxH=window.innerHeight,minH=90;
+        if(newH>maxH)newH=maxH;if(newH<minH)newH=minH;
+        sheet.style.height=newH+'px';
+        backdrop.style.opacity=Math.max(0.15,Math.min(1,(newH/maxH)*1.4));
+    },{passive:true});
+    document.addEventListener('touchend',()=>{
+        if(!wsDragging)return;
+        wsDragging=false;sheet.classList.remove('dragging');backdrop.style.opacity='';
+        const h=sheet.offsetHeight,maxH=window.innerHeight;
+        sheet.style.height='';
+        if(h<180)closeWebSheet();
+        else if(h>maxH*0.72)sheet.classList.add('fullscreen');
+        else sheet.classList.remove('fullscreen');
+    });
+}
+document.addEventListener('keydown',(e)=>{if(e.key==='Escape'&&wsCurrentKey)closeWebSheet()});
+
+/* ============ GIFT TARGET PICKER ============ */
+window.openGiftTargetPicker=()=>{
+    if(!requireLogin())return;
+    const users=[];
+    state.seats.forEach((s,i)=>{if(s&&s.uid){users.push({uid:s.uid,name:s.uid===myProfile.uid?(s.name+' (Self)'):s.name,avatar:s.avatar,coins:s.coins||0,seat:i,isSelf:s.uid===myProfile.uid})}});
+    if(!users.length){toastMsg('কেউ মাইকে নেই — আগে কাউকে ইনভাইট করুন');return}
+    $('giftTargetList').innerHTML=users.map(u=>`<div class="target-item" onclick="pickGiftTarget('${esc(u.uid)}', '${esc(u.name.replace(' (Self)',''))}')"><img src="${u.avatar||GUEST_AVATAR}"><div style="flex:1;min-width:0"><div class="tname">${esc(u.name)} ${u.isSelf?'👤':''}</div><div class="tcoins"><i class="fa-solid fa-gem"></i> ${(u.coins||0).toLocaleString()}</div></div><i class="fa-solid fa-chevron-right tchev"></i></div>`).join('');
+    closeSheet();
+    $('sheetBackdrop').classList.add('active');
+    $('giftPickerSheet').classList.add('active');
+};
+window.pickGiftTarget=(uid,name)=>{currentGiftTarget={uid,name};closeSheet();setTimeout(()=>openWebSheet('gift',uid,name),150)};
+
+/* ============ GIFT + EMOJI POSTMESSAGE HANDLER ============ */
+window.addEventListener('message',async(e)=>{
+    const d=e.data;
+    if(!d)return;
+
+    /* -------- GIFT -------- */
+    if(d.type==='HOURFM_GIFT'){
+        const targetUid=d.targetUid||currentGiftTarget.uid;
+        const targetName=d.targetName||currentGiftTarget.name;
+        const price=Number(d.price)||0;
+        const isSelf=myProfile&&targetUid===myProfile.uid;
+
+        if(myProfile&&price){
+            await runTransaction(ref(db,`users/${myProfile.uid}/diamonds`),x=>Math.max(0,(x||1000)-price));
+            myProfile.diamonds=Math.max(0,(myProfile.diamonds||1000)-price);
+        }
+        if(targetUid&&price){
+            const seatIdx=state.seats.findIndex(s=>s&&s.uid===targetUid);
+            if(seatIdx>-1)await runTransaction(ref(db,`${BASE}/seats/${seatIdx}/coins`),c=>(c||0)+price);
+            await runTransaction(ref(db,`${BASE}/listeners/${targetUid}/coins`),c=>(c||0)+price);
+        }
+        logActivity('heart',null,{target:isSelf?'নিজেকে':targetName});
+        await push(ref(db,`${BASE}/messages`),{uid:myProfile?.uid||'me',name:isSelf?`${myProfile?.name||'You'} → নিজেকে`:`${myProfile?.name||'You'} → ${targetName||'someone'}`,avatar:myProfile?.avatar||'',text:`${d.emoji||'🎁'} ${d.name||'Gift'} (💎${price})`,type:'gift',ts:Date.now()});
+
+        // push gift to Firebase → সবাই দেখবে
+        await push(ref(db,`${BASE}/gifts`),{
+            uid:myProfile?.uid||'',
+            name:myProfile?.name||'',
+            avatar:myProfile?.avatar||'',
+            giftName:d.name||'Gift',
+            emoji:d.emoji||'🎁',
+            video:d.video||null,
+            isVideo:!!d.isVideo,
+            price:price,
+            targetUid:targetUid||'',
+            targetName:targetName||'',
+            ts:Date.now()
+        });
+
+        // iframe খোলা থাকে — আরো gift পাঠাতে পারবে
+        return;
+    }
+
+    /* -------- EMOJI / REACTION -------- */
+    if(d.type==='HOURFM_EMOJI'){
+        if(!myProfile){toastMsg('লগইন করুন');return}
+        const idx=state.seats.findIndex(s=>s&&s.uid===myProfile.uid);
+        if(idx===-1){toastMsg('আগে একটা সিটে উঠুন 🎤');return}
+        const code=d.code||'1f60d';
+        const src=d.src||('https://fonts.gstatic.com/s/e/notoemoji/latest/'+code+'/512.gif');
+
+        // Firebase-এ push → সবাই real-time-এ দেখবে
+        await push(ref(db,`${BASE}/reactions`),{
+            uid:myProfile.uid,
+            name:myProfile.name,
+            avatar:myProfile.avatar,
+            seat:idx,
+            code:code,
+            src:src,
+            ts:Date.now()
+        });
+
+        logActivity('react',idx,{emoji:code});
+        // Note: নিজের reaction-ও listener থেকে show হবে (double avoid করতে চাইলে নিচের লাইন কমেন্ট)
+        showSeatReaction(idx,code,src);
+
+        // panel বন্ধ করি
+        closeWebSheet();
+        return;
+    }
+});
+
+/* ============ GIFT LISTENER (REAL-TIME — সবাই দেখবে) ============ */
+onValue(query(ref(db,`${BASE}/gifts`),limitToLast(5)),snap=>{
+    const data=snap.val();if(!data)return;
+    const entries=Object.entries(data).sort((a,b)=>(a[1].ts||0)-(b[1].ts||0));
+    if(!window._lastGiftTs)window._lastGiftTs=0;
+    entries.forEach(([k,g])=>{
+        if(!g||!g.ts)return;
+        if(g.ts<=window._lastGiftTs)return;
+        window._lastGiftTs=g.ts;
+        playGiftAnimation({
+            name:g.giftName,
+            emoji:g.emoji,
+            video:g.video,
+            isVideo:g.isVideo,
+            image:g.image,
+            targetName:g.targetName
+        },g.targetUid);
+    });
+});
+
+/* ============ GIFT ANIMATION ============ */
+function getSeatCenterPx(seatIndex){
+    const app=document.querySelector('.app-container');if(!app)return{x:0,y:0};
+    const appR=app.getBoundingClientRect();
+    const cx=appR.left+appR.width/2;const cy=appR.top+appR.height/2;
+    if(seatIndex<0)return{x:0,y:0};
+    const el=document.querySelector(`.seat[data-seat="${seatIndex}"] .seat-avatar`);
+    if(!el)return{x:0,y:0};
+    const r=el.getBoundingClientRect();
+    return{x:(r.left+r.width/2)-cx,y:(r.top+r.height/2)-cy};
+}
+
+function playGiftAnimation(d,targetUid){
+    const layer=$('giftAnimLayer');
+    if(!layer)return;
+    const senderUid=myProfile?myProfile.uid:null;
+    const senderSeat=senderUid?state.seats.findIndex(s=>s&&s.uid===senderUid):-1;
+    const targetSeat=targetUid?state.seats.findIndex(s=>s&&s.uid===targetUid):-1;
+    const senderPos=getSeatCenterPx(senderSeat);
+    const targetPos=getSeatCenterPx(targetSeat);
+    const isVideoGift=d.isVideo&&d.video;
+    const displayEmoji=d.emoji||'🎁';
+    layer.innerHTML='';layer.classList.add('active');
+    const labelText=(d.targetName)?`${displayEmoji} ${d.name} → ${d.targetName}`:`${displayEmoji} ${d.name}`;
+    const label=document.createElement('div');label.className='gift-anim-label';label.textContent=labelText;layer.appendChild(label);
+    const glow=document.createElement('div');glow.className='gift-anim-glow';layer.appendChild(glow);
+    ['','pink','cyan'].forEach((cls,i)=>{const r=document.createElement('div');r.className='gift-anim-ring '+cls;r.style.animationDelay=(i*220)+'ms';layer.appendChild(r)});
+    const sparkCols=['#ffd166','#ff7e5f','#ff2a74','#8b5cf6','#22d3ee','#ffffff'];
+    for(let i=0;i<28;i++){
+        const spark=document.createElement('div');spark.className='gift-anim-spark';
+        const angle=(Math.PI*2*i)/28+(Math.random()-.5)*.3;const dist=150+Math.random()*200;
+        const tx=Math.cos(angle)*dist;const ty=Math.sin(angle)*dist;
+        const col=sparkCols[i%sparkCols.length];const size=6+Math.random()*8;
+        spark.style.width=size+'px';spark.style.height=size+'px';spark.style.background=col;
+        spark.style.boxShadow=`0 0 10px ${col}, 0 0 22px ${col}, 0 0 40px ${col}`;
+        layer.appendChild(spark);
+        spark.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:0},{transform:`translate(-50%,-50%) translate(${tx*0.15}px, ${ty*0.15}px) scale(1.4)`,opacity:1,offset:.18},{transform:`translate(-50%,-50%) translate(${tx*0.75}px, ${ty*0.75}px) scale(1)`,opacity:1,offset:.55},{transform:`translate(-50%,-50%) translate(${tx}px, ${ty}px) scale(0)`,opacity:0}],{duration:1700+Math.random()*400,delay:200+Math.random()*250,easing:'cubic-bezier(.2,.8,.2,1)',fill:'forwards'});
+    }
+    for(let i=0;i<8;i++){
+        const sat=document.createElement('div');sat.className='gift-anim-satellite';sat.textContent=displayEmoji;
+        const angle=(Math.PI*2*i)/8+Math.random()*0.3;const dist=130+Math.random()*140;
+        const tx=Math.cos(angle)*dist;const ty=Math.sin(angle)*dist;layer.appendChild(sat);
+        sat.animate([{transform:'translate(-50%,-50%) scale(0) rotate(0deg)',opacity:0},{transform:`translate(-50%,-50%) translate(${tx*0.4}px, ${ty*0.4}px) scale(1.2) rotate(120deg)`,opacity:1,offset:.25},{transform:`translate(-50%,-50%) translate(${tx}px, ${ty}px) scale(0.9) rotate(300deg)`,opacity:1,offset:.65},{transform:`translate(-50%,-50%) translate(${tx*1.2}px, ${ty*1.2}px) scale(0) rotate(420deg)`,opacity:0}],{duration:2000+Math.random()*500,delay:300+i*70,easing:'cubic-bezier(.2,.7,.3,1)',fill:'forwards'});
+    }
+    const petalPool=['🌸','🌺','🌷','🌹','🌻','💮','🏵️','✨','💫','💖'];
+    for(let i=0;i<22;i++){
+        const p=document.createElement('div');p.className='gift-anim-petal';
+        p.textContent=petalPool[Math.floor(Math.random()*petalPool.length)];
+        p.style.left=(Math.random()*100)+'%';p.style.fontSize=(18+Math.random()*26)+'px';
+        layer.appendChild(p);
+        const drift=(Math.random()-0.5)*180;const rotEnd=260+Math.random()*360;const dur=2400+Math.random()*1200;
+        p.animate([{transform:'translate(0, 0) rotate(0deg) scale(.4)',opacity:0},{transform:`translate(${drift*0.3}px, 25vh) rotate(${rotEnd*0.35}deg) scale(1)`,opacity:.95,offset:.25},{transform:`translate(${drift*0.7}px, 60vh) rotate(${rotEnd*0.7}deg) scale(1)`,opacity:.9,offset:.6},{transform:`translate(${drift}px, 110vh) rotate(${rotEnd}deg) scale(.85)`,opacity:0}],{duration:dur,delay:Math.random()*700,easing:'cubic-bezier(.35,.1,.5,1)',fill:'forwards'});
+    }
+    const TOTAL=3600;
+    if(isVideoGift){
+        const video=document.createElement('video');video.className='gift-anim-video';video.src=d.video;
+        video.playsInline=true;video.muted=false;video.preload='auto';layer.appendChild(video);
+        video.style.transform=`translate(-50%,-50%) translate(${senderPos.x}px, ${senderPos.y}px) scale(0.18)`;
+        video.style.opacity='0';
+        requestAnimationFrame(()=>{
+            video.animate([{transform:`translate(-50%,-50%) translate(${senderPos.x}px, ${senderPos.y}px) scale(0.18)`,opacity:0},{transform:`translate(-50%,-50%) translate(${senderPos.x*0.5}px, ${senderPos.y*0.5}px) scale(0.55)`,opacity:1,offset:.18},{transform:'translate(-50%,-50%) translate(0,0) scale(1)',opacity:1,offset:.40},{transform:'translate(-50%,-50%) translate(0,0) scale(1)',opacity:1,offset:.78},{transform:`translate(-50%,-50%) translate(${targetPos.x}px, ${targetPos.y}px) scale(0.10)`,opacity:0.85,offset:.95},{transform:`translate(-50%,-50%) translate(${targetPos.x}px, ${targetPos.y}px) scale(0.05)`,opacity:0}],{duration:TOTAL,easing:'cubic-bezier(.4,.05,.3,1)',fill:'forwards'});
+        });
+        video.play().catch(err=>{console.warn('Video autoplay failed:',err);video.muted=true;video.play().catch(()=>{})});
+    }else{
+        const main=document.createElement('div');main.className='gift-anim-main';main.textContent=displayEmoji;layer.appendChild(main);
+        main.animate([{transform:`translate(-50%,-50%) translate(${senderPos.x}px, ${senderPos.y}px) scale(0.2) rotate(-30deg)`,opacity:0,offset:0},{transform:`translate(-50%,-50%) translate(${senderPos.x}px, ${senderPos.y}px) scale(0.7) rotate(0deg)`,opacity:1,offset:.10},{transform:'translate(-50%,-50%) translate(0,0) scale(1.8) rotate(8deg)',opacity:1,offset:.25},{transform:'translate(-50%,-50%) translate(0,0) scale(1.5) rotate(-4deg)',opacity:1,offset:.40},{transform:'translate(-50%,-50%) translate(0,0) scale(1.7) rotate(2deg)',opacity:1,offset:.55},{transform:'translate(-50%,-50%) translate(0,0) scale(1.6) rotate(0deg)',opacity:1,offset:.72},{transform:`translate(-50%,-50%) translate(${targetPos.x*0.7}px, ${targetPos.y*0.7}px) scale(0.55) rotate(-15deg)`,opacity:1,offset:.85},{transform:`translate(-50%,-50%) translate(${targetPos.x}px, ${targetPos.y}px) scale(0.25) rotate(10deg)`,opacity:0.9,offset:.94},{transform:`translate(-50%,-50%) translate(${targetPos.x}px, ${targetPos.y}px) scale(0.05) rotate(20deg)`,opacity:0}],{duration:TOTAL,easing:'cubic-bezier(.4,.05,.3,1)',fill:'forwards'});
+    }
+    setTimeout(()=>{
+        layer.innerHTML='';layer.classList.remove('active');
+        const msg=d.targetName?`🎁 ${d.name} → ${d.targetName}`:`🎁 ${d.name} পাঠানো হয়েছে!`;
+        toastMsg(msg);
+    },TOTAL+200);
+}
+window.playGiftAnimation=playGiftAnimation;
+
+/* ============ KEYBOARD ============ */
+if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',()=>{
+        const kh=window.innerHeight-window.visualViewport.height;
+        const active=document.querySelector('.bottom-sheet.active, .modal-overlay.active');
+        if(active&&kh>100)active.style.bottom=kh+'px';
+        else if(active)active.style.bottom='0px';
+    });
+}
+
+/* ============ INIT ============ */
+$('roomIdInput').value=ROOM_ID;
+$('my-avatar-top').src=GUEST_AVATAR;
+renderBranding();renderSeats();renderMessageFeed();renderListeners();renderMembers();updateMicButton();initWebSheetDrag();
+
+console.log('%c🎧 HOUR FM • Firebase Live • Room: '+ROOM_ID,'color:#00E5FF;font-size:14px;font-weight:bold');
+</script>
+</body>
+</html>
