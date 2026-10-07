@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Live Audio Room</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;user-select:none}
+input,textarea{user-select:text;-webkit-user-select:text}
+body{background:radial-gradient(circle at 50% 100%,#4a105a,#1a0b2e,#05020a);display:flex;justify-content:center;align-items:center;min-height:100vh;color:#fff;overflow:hidden}
+.app-container{width:100%;max-width:420px;height:100vh;max-height:850px;position:relative;background-color:rgba(26,11,46,.7);overflow:hidden;box-shadow:0 0 50px rgba(0,0,0,.9);border-radius:20px;border:1px solid rgba(255,255,255,.05)}
+
+.loading-cover{position:absolute;inset:0;z-index:2000;background:radial-gradient(circle at 50% 40%,#2a1055,#0a0318);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;text-align:center;padding:30px}
+.loading-cover.hidden{display:none}
+.spinner{width:52px;height:52px;border:4px solid rgba(168,85,247,.25);border-top-color:#a855f7;border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:#d8b4fe;font-weight:600}
+
+.top-bar{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 12px 6px;position:relative;z-index:10;gap:6px}
+.room-info{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1;min-width:0;padding:4px;border-radius:30px}
+.room-logo-circle{width:50px;height:50px;flex-shrink:0;border-radius:50%;position:relative;background:radial-gradient(circle at 30% 30%,#2b8a40,#0f3d1c);border:2px solid #F5D76E;box-shadow:0 0 14px rgba(245,215,110,.55);overflow:hidden;display:flex;justify-content:center;align-items:center}
+.room-logo-circle img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.room-logo-circle .cassette-text{font-size:9px;font-weight:700;color:#fff;text-align:center;line-height:1.1;padding:2px}
+.room-text{min-width:0;display:flex;flex-direction:column;gap:3px}
+.room-title-top{font-size:14px;font-weight:600;color:#fff;display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.room-title-top i{color:#00E5FF;font-size:12px}
+.room-points{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:14px;background:linear-gradient(135deg,rgba(245,215,110,.22),rgba(212,175,55,.12));border:1px solid rgba(245,215,110,.55);font-size:12px;font-weight:800;color:#fff8dc;width:fit-content;box-shadow:0 0 10px rgba(245,215,110,.3)}
+.top-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.listener-group{display:flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:22px;padding:3px 10px 3px 3px;gap:5px;cursor:pointer}
+.listener-avatar{width:28px;height:28px;border-radius:50%;border:1.5px solid #F5D76E;object-fit:cover;background:#333}
+.listener-count{font-size:11px;font-weight:600;color:#fff;min-width:10px;text-align:center}
+.exit-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);display:flex;justify-content:center;align-items:center;font-size:13px;color:#00E5FF;cursor:pointer}
+.exit-btn.guest{color:#F5D76E}
+
+/* JOIN button top */
+.join-bar{display:flex;justify-content:center;padding:4px 16px 8px;gap:8px}
+.join-btn{flex:1;padding:10px 16px;border:none;border-radius:14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:.25s}
+.join-btn.join{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 6px 20px rgba(34,197,94,.4)}
+.join-btn.joined{background:rgba(255,255,255,.06);color:#22c55e;border:1px solid rgba(34,197,94,.5)}
+.join-btn:disabled{opacity:.7;cursor:default}
+
+/* SEATS */
+.seats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px 4px;padding:10px 10px;margin-top:14px;width:100%;box-sizing:border-box}
+.seat{display:flex;flex-direction:column;align-items:center;position:relative;min-width:0}
+.seat-avatar{width:100%;max-width:54px;aspect-ratio:1/1;border-radius:50%;border:2px solid #F5D76E;background:radial-gradient(circle at 30% 30%,#2a1a3e,#12081f);display:flex;justify-content:center;align-items:center;position:relative;box-shadow:inset 0 0 12px rgba(245,215,110,.15),0 0 10px rgba(245,215,110,.25);cursor:pointer;transition:.25s;overflow:hidden}
+.seat-avatar i{font-size:20px;color:#F5D76E}
+.seat-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.seat-avatar.locked{border-color:#ff4d6d}
+.seat-avatar.locked i{color:#ff4d6d}
+.seat-avatar.occupied{background:radial-gradient(circle at 30% 30%,#3b2a4f,#1a0b2e)}
+.seat-avatar.is-me{border-color:#00E5FF;box-shadow:inset 0 0 12px rgba(0,229,255,.3),0 0 16px rgba(0,229,255,.7)}
+.seat-avatar.is-owner{border-color:#F5D76E;box-shadow:inset 0 0 12px rgba(245,215,110,.4),0 0 18px rgba(245,215,110,.85)}
+.seat-avatar.is-admin{border-color:#22c55e;box-shadow:inset 0 0 12px rgba(34,197,94,.35),0 0 16px rgba(34,197,94,.75)}
+.mic-badge{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:8px;color:#fff;border:2px solid #1a0b2e;z-index:4}
+.mic-badge.on{background:#2b8a40}
+.mic-badge.off{background:#ff4d6d}
+.lock-badge{position:absolute;bottom:-4px;right:-4px;width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:8px;color:#fff;background:#ff4d6d;border:2px solid #1a0b2e;z-index:4}
+.role-badge-seat{position:absolute;top:-6px;left:-6px;width:18px;height:18px;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:9px;color:#1a1405;border:2px solid #1a0b2e;z-index:5}
+.role-badge-seat.owner{background:linear-gradient(135deg,#fff8dc,#d4af37)}
+.role-badge-seat.admin{background:linear-gradient(135deg,#4ade80,#16a34a);color:#fff}
+.seat-meta{margin-top:5px;text-align:center;width:100%;min-width:0}
+.seat-number{font-size:10px;color:#aaa;font-weight:500;max-width:100%;margin:0 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat-number.taken{color:#F5D76E;font-weight:600}
+
+.seat-reaction-layer{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none;z-index:3}
+.seat-react{position:absolute;left:50%;top:50%;width:80%;height:80%;object-fit:contain;transform:translate(-50%,-50%);font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;filter:drop-shadow(0 2px 6px rgba(0,0,0,.85));animation:reactInside 2.4s cubic-bezier(.2,.8,.3,1.1) forwards}
+@keyframes reactInside{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}15%{opacity:1;transform:translate(-50%,-50%) scale(1.25)}30%{transform:translate(-50%,-50%) scale(.95)}50%{transform:translate(-50%,-50%) scale(1.05)}75%{transform:translate(-50%,-50%) scale(.95)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.3)}}
+.seat-react-burst{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(255,210,74,.9);animation:reactBurstRing .9s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes reactBurstRing{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.2);opacity:0}}
+.seat-react-dim::after{content:'';position:absolute;inset:0;border-radius:50%;background:rgba(0,0,0,.55);z-index:2;animation:dimFade 2.2s ease forwards;pointer-events:none}
+@keyframes dimFade{0%{opacity:0}15%{opacity:1}80%{opacity:1}100%{opacity:0}}
+
+/* MESSAGE FEED */
+.message-feed{padding:0 22px;margin-top:18px;display:flex;flex-direction:column;gap:10px;max-height:170px;overflow-y:auto;scrollbar-width:none}
+.message-feed::-webkit-scrollbar{display:none}
+.topic-row{display:flex;align-items:flex-start;gap:8px;padding:2px 0}
+.topic-text{flex:1;font-size:13px;color:#00E5FF;font-weight:500;line-height:1.5;word-break:break-word}
+.topic-edit{color:#F5D76E;cursor:pointer;font-size:12px;padding:5px 7px;border-radius:8px}
+.messages-list{display:flex;flex-direction:column;gap:5px}
+.msg-item{font-size:12px;line-height:1.5;color:#e6ddf2;padding:1px 0;word-break:break-word;animation:msgSlide .35s ease}
+@keyframes msgSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg-item .msg-name{color:#F5D76E;font-weight:600;margin-right:6px}
+.msg-item .msg-name::after{content:':';color:#F5D76E}
+.msg-empty{font-size:11px;color:#6b5e85;font-style:italic}
+
+/* ACTIVITY */
+.activity-strip{position:absolute;left:12px;right:12px;bottom:90px;z-index:8;pointer-events:none;display:flex;flex-direction:column-reverse;gap:4px;max-height:130px;overflow:hidden}
+.activity-item{background:rgba(0,0,0,.6);color:#ffdf80;font-size:11px;font-weight:500;padding:5px 12px;border-radius:14px;align-self:flex-start;animation:slideIn .3s ease;backdrop-filter:blur(6px);border:1px solid rgba(245,215,110,.25);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* BOTTOM BAR */
+.bottom-bar{position:absolute;bottom:0;left:0;width:100%;display:flex;justify-content:space-around;align-items:center;padding:15px 6px 25px;background:linear-gradient(to top,rgba(5,0,10,.95),transparent);z-index:10}
+.bottom-icon{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.05);display:flex;justify-content:center;align-items:center;font-size:17px;color:#ddd;border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:.3s;position:relative;flex-shrink:0}
+.bottom-icon:active{transform:scale(.93)}
+.gift-btn{width:56px;height:56px;background:linear-gradient(135deg,#a855f7,#6366f1);font-size:24px;color:#fff;box-shadow:0 0 20px rgba(168,85,247,.6);border:2px solid rgba(255,255,255,.4);transform:translateY(-10px)}
+.bottom-icon.mic-on{background:rgba(43,138,64,.3);color:#7dffa1;border-color:rgba(43,138,64,.6)}
+.bottom-icon.mic-off{background:rgba(255,77,109,.25);color:#ff8a9c;border-color:rgba(255,77,109,.6)}
+
+/* SHEETS */
+.sheet-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:150;display:none;backdrop-filter:blur(3px)}
+.sheet-backdrop.active{display:block}
+.bottom-sheet{position:fixed;left:50%;bottom:0;width:100%;max-width:420px;z-index:160;background:rgba(20,10,35,.98);border-top-left-radius:22px;border-top-right-radius:22px;padding:10px 14px 20px;transform:translate(-50%,110%);transition:transform .3s cubic-bezier(.2,.8,.3,1);box-shadow:0 -10px 40px rgba(0,0,0,.6);border-top:1px solid rgba(255,255,255,.06);padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:85vh;overflow-y:auto}
+.bottom-sheet.active{transform:translate(-50%,0)}
+.sheet-title{text-align:center;font-size:13px;font-weight:600;color:#F5D76E;padding:12px 0 8px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:6px}
+.sheet-option{display:flex;align-items:center;gap:16px;padding:15px 12px;font-size:15px;color:#fff;font-weight:500;cursor:pointer;border-radius:12px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sheet-option:active{background:rgba(255,255,255,.08)}
+.sheet-option .opt-icon{width:32px;height:32px;display:flex;justify-content:center;align-items:center;font-size:18px;background:rgba(255,255,255,.07);border-radius:50%;flex-shrink:0}
+.sheet-option .opt-label{flex:1}
+.sheet-option.danger{color:#ff8a9c}
+.sheet-option.danger .opt-icon{color:#ff8a9c;background:rgba(255,77,109,.1)}
+.sheet-option.gold{color:#F5D76E}
+.sheet-option.green .opt-icon{color:#7dffa1;background:rgba(43,138,64,.15)}
+.sheet-cancel{margin-top:10px;background:linear-gradient(180deg,#7dffa1,#2ecc71);color:#0a1f10;font-weight:700;font-size:16px;padding:14px;border-radius:12px;text-align:center;cursor:pointer}
+
+.modal-overlay{position:absolute;inset:0;background:rgba(10,5,20,.95);z-index:200;display:none;flex-direction:column;padding:20px;backdrop-filter:blur(10px);overflow-y:auto}
+.modal-overlay.active{display:flex}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h3{color:#fff;font-size:18px;font-weight:600}
+.close-btn{color:#fff;cursor:pointer;font-size:18px;background:rgba(255,255,255,.1);width:35px;height:35px;border-radius:50%;display:flex;justify-content:center;align-items:center}
+
+.user-list{flex:1;display:flex;flex-direction:column;gap:12px;padding-bottom:20px}
+.user-card{display:flex;align-items:center;gap:15px;background:rgba(255,255,255,.04);padding:12px;border-radius:15px;border:1px solid rgba(255,255,255,.03);cursor:pointer}
+.user-card:active{background:rgba(255,255,255,.08)}
+.user-avatar-box{position:relative;width:55px;height:55px;flex-shrink:0}
+.user-avatar{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.3)}
+.user-avatar.owner-border{border-color:#F5D76E;box-shadow:0 0 14px rgba(245,215,110,.7)}
+.user-avatar.admin-border{border-color:#22c55e;box-shadow:0 0 14px rgba(34,197,94,.7)}
+.user-badge{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.user-badge.owner{background:linear-gradient(135deg,#fff8dc,#d4af37);color:#1a1405}
+.user-badge.admin{background:linear-gradient(135deg,#4ade80,#16a34a);color:#fff}
+.user-badge.member{background:#e5e7eb;color:#333}
+.user-badge.me{background:#ffb400;color:#000}
+.user-badge.audience{background:rgba(255,255,255,.15);color:#cbd5e1}
+.user-details{flex:1;min-width:0}
+.user-name-row{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#fff}
+.user-desc{font-size:11px;color:#aaa;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty-msg{text-align:center;color:#777;font-size:13px;padding:30px 0}
+
+/* iframe sheets */
+#webSheetBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:170;display:none;backdrop-filter:blur(2px)}
+#webSheetBackdrop.active{display:block}
+#webSheet{position:fixed;left:50%;bottom:0;width:100%;max-width:420px;height:55vh;background:#1a0b2e;border-top-left-radius:22px;border-top-right-radius:22px;z-index:180;display:flex;flex-direction:column;transform:translate(-50%,110%);transition:transform .3s;box-shadow:0 -10px 40px rgba(0,0,0,.7);overflow:hidden}
+#webSheet.active{transform:translate(-50%,0)}
+#webSheet.fullscreen{height:100vh;border-radius:0}
+#webSheetHeader{position:relative;display:flex;align-items:center;padding:12px 14px 10px;background:rgba(20,10,35,.98);border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.web-sheet-grab{position:absolute;top:5px;left:50%;transform:translateX(-50%);width:42px;height:4px;border-radius:4px;background:rgba(255,255,255,.35)}
+.web-sheet-title{flex:1;font-size:14px;font-weight:600;color:#F5D76E;text-align:center;padding-left:30px}
+.web-sheet-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;cursor:pointer;flex-shrink:0}
+.web-sheet-body{flex:1;position:relative;background:#fff;overflow:hidden}
+.web-sheet-body iframe{width:100%;height:100%;border:none;display:block}
+.web-sheet-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#1a0b2e;color:#F5D76E;gap:14px;z-index:2;font-size:13px}
+.web-sheet-loading.hidden{opacity:0;pointer-events:none}
+
+.toast-msg{position:fixed;left:50%;bottom:120px;transform:translate(-50%,20px);background:rgba(30,15,50,.96);border:1px solid rgba(245,215,110,.45);color:#fff;font-size:12px;padding:10px 18px;border-radius:22px;opacity:0;pointer-events:none;transition:.3s;z-index:900;max-width:88%;text-align:center}
+.toast-msg.show{opacity:1;transform:translate(-50%,0)}
+
+#giftAnimLayer{position:fixed;inset:0;z-index:2000;display:none;pointer-events:none;overflow:hidden}
+#giftAnimLayer.active{display:block}
+.gift-anim-glow{position:absolute;top:50%;left:50%;width:80vmin;height:80vmin;border-radius:50%;transform:translate(-50%,-50%) scale(0);background:radial-gradient(circle,rgba(255,209,102,.55) 0,rgba(255,42,116,.35) 30%,transparent 75%);filter:blur(50px);opacity:0;animation:gaGlowPulse 3200ms ease-out forwards}
+@keyframes gaGlowPulse{0%{transform:translate(-50%,-50%) scale(.1);opacity:0}25%{transform:translate(-50%,-50%) scale(1.1);opacity:.95}70%{transform:translate(-50%,-50%) scale(1.6);opacity:.6}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+.gift-anim-ring{position:absolute;top:50%;left:50%;width:70px;height:70px;border-radius:50%;border:3px solid rgba(255,209,102,.85);transform:translate(-50%,-50%) scale(0);opacity:0;animation:gaRingExpand 1600ms cubic-bezier(.2,.8,.2,1) forwards}
+@keyframes gaRingExpand{0%{transform:translate(-50%,-50%) scale(0);opacity:0}15%{opacity:1}100%{transform:translate(-50%,-50%) scale(7);opacity:0}}
+.gift-anim-spark{position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%) scale(0);opacity:0;will-change:transform,opacity}
+.gift-anim-petal{position:absolute;top:-60px;font-size:30px;opacity:0;will-change:transform,opacity;z-index:3}
+.gift-anim-satellite{position:absolute;top:50%;left:50%;font-size:34px;transform:translate(-50%,-50%) scale(0);opacity:0;will-change:transform,opacity;z-index:4}
+.gift-anim-main{position:absolute;top:50%;left:50%;font-size:140px;transform:translate(-50%,-50%) scale(0);opacity:0;will-change:transform,opacity;z-index:5}
+.gift-anim-label{position:absolute;top:14%;left:50%;transform:translateX(-50%);color:#F5D76E;font-size:20px;font-weight:800;padding:10px 24px;background:linear-gradient(135deg,rgba(168,85,247,.55),rgba(245,215,110,.45));backdrop-filter:blur(10px);border-radius:30px;border:2px solid rgba(245,215,110,.7);white-space:nowrap;z-index:6;opacity:0;animation:gaLabelIn 600ms ease forwards}
+@keyframes gaLabelIn{0%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.75)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+
+@media (max-height:700px){.seats-grid{gap:12px 4px;margin-top:10px}.message-feed{max-height:120px}.seat-avatar{max-width:48px}}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- LOADING -->
+  <div class="loading-cover" id="loadingCover">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">রুম লোড হচ্ছে...</div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="room-info" onclick="toggleMemberModal()">
+      <div class="room-logo-circle" id="room-logo-preview"><span class="cassette-text">FM</span></div>
+      <div class="room-text">
+        <div class="room-title-top"><span id="room-name-display">Loading…</span><i class="fa-solid fa-music"></i></div>
+        <div class="room-points">
+          <i class="fa-solid fa-gem" style="color:#7dd3fc;font-size:9px"></i>
+          <span id="roomPointsVal">0</span>
+        </div>
+      </div>
+    </div>
+    <div class="top-right">
+      <div class="listener-group" onclick="toggleListenersModal()">
+        <img src="" alt="" class="listener-avatar" id="my-avatar-top">
+        <div class="listener-count" id="userCountBadge">0</div>
+      </div>
+      <div class="exit-btn" id="authBtn" onclick="exitRoom()"><i class="fa-solid fa-right-from-bracket"></i></div>
+    </div>
+  </div>
+
+  <!-- JOIN BAR -->
+  <div class="join-bar" id="joinBar" style="display:none">
+    <button class="join-btn join" id="joinBtn"><i class="fa-solid fa-user-plus"></i> Join Room</button>
+  </div>
+
+  <!-- SEATS -->
+  <div class="seats-grid" id="seatsGrid"></div>
+
+  <!-- MESSAGE FEED -->
+  <div class="message-feed" id="messageFeed">
+    <div class="topic-row">
+      <div class="topic-text" id="topicText">Loading…</div>
+      <i class="fa-solid fa-pen topic-edit" onclick="editTopic()"></i>
+    </div>
+    <div class="messages-list" id="messagesList"></div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="activity-strip" id="activityStrip"></div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <div class="bottom-icon" onclick="openChatSheet()"><i class="fa-solid fa-comment-dots"></i></div>
+    <div class="bottom-icon" onclick="openWebSheet('emoji')"><i class="fa-solid fa-face-smile"></i></div>
+    <div class="bottom-icon" onclick="openMessageInput()"><i class="fa-solid fa-paper-plane"></i></div>
+    <div class="bottom-icon" id="micToggleBtn" onclick="toggleMyMic()"><i class="fa-solid fa-microphone"></i></div>
+    <div class="bottom-icon gift-btn" onclick="openWebSheet('gift')"><i class="fa-solid fa-gift"></i></div>
+    <div class="bottom-icon" onclick="openWebSheet('games')"><i class="fa-solid fa-gamepad"></i></div>
+  </div>
+
+  <div class="toast-msg" id="toastBox"></div>
+</div>
+
+<!-- SHEETS -->
+<div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
+
+<div class="bottom-sheet" id="seatSheet">
+  <div class="sheet-title" id="sheetTitle">Seat</div>
+  <div id="sheetOptions"></div>
+  <div class="sheet-cancel" onclick="closeSheet()">Cancel</div>
+</div>
+
+<div class="bottom-sheet" id="msgSheet">
+  <div class="sheet-title">Send message</div>
+  <div style="display:flex;gap:10px;padding:12px 4px 4px">
+    <input type="text" id="chatInput" placeholder="Type..." maxlength="200" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(245,215,110,.35);border-radius:22px;padding:12px 18px;color:#fff;font-family:inherit;font-size:14px;outline:none">
+    <button onclick="sendChatMessage()" style="width:46px;height:46px;border-radius:50%;border:none;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;font-size:16px;cursor:pointer"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<div class="bottom-sheet" id="chatSheet" style="max-height:80vh;padding:0;overflow:hidden;display:flex;flex-direction:column">
+  <div style="padding:10px 8px;background:linear-gradient(180deg,rgba(168,85,247,.15),rgba(20,10,35,.4));border-bottom:1px solid rgba(168,85,247,.25);flex-shrink:0">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:0 8px">
+      <h3 style="font-size:14px;font-weight:700;color:#F5D76E">Messages</h3>
+      <div onclick="closeSheet()" style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;color:#fff;cursor:pointer"><i class="fa-solid fa-xmark"></i></div>
+    </div>
+  </div>
+  <iframe id="chatSheetFrame" style="flex:1;width:100%;border:none;background:#0a0616" allow="microphone;camera;autoplay"></iframe>
+</div>
+
+<!-- LISTENERS MODAL -->
+<div class="modal-overlay" id="listenersModal">
+  <div class="modal-header"><h3>Members</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('listenersModal')"></i></div>
+  <div class="user-list" id="listenerList"></div>
+</div>
+
+<!-- MEMBERS MODAL -->
+<div class="modal-overlay" id="memberModal">
+  <div class="modal-header"><h3>Room Info</h3><i class="fa-solid fa-xmark close-btn" onclick="closeModal('memberModal')"></i></div>
+  <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:20px">
+    <div class="room-logo-circle" id="room-logo-modal" style="width:100px;height:100px;border-width:3px"><span class="cassette-text">FM</span></div>
+    <div id="room-name-modal-display" style="font-size:16px;font-weight:600;margin-top:12px">Loading…</div>
+    <div id="room-id-modal" style="font-size:12px;color:#aaa;margin-top:4px">ID:---</div>
+    <div id="owner-info-modal" style="display:none;align-items:center;gap:10px;margin-top:14px;background:rgba(245,215,110,.08);padding:8px 14px 8px 8px;border-radius:30px;border:1px solid rgba(245,215,110,.35)"></div>
+  </div>
+  <div class="member-title" style="font-size:16px;font-weight:600;margin:0 0 10px;text-align:center">Members</div>
+  <div class="user-list" id="memberList"></div>
+</div>
+
+<!-- WEB SHEET -->
+<div id="webSheetBackdrop" onclick="closeWebSheet()"></div>
+<div id="webSheet">
+  <div id="webSheetHeader">
+    <div class="web-sheet-grab"></div>
+    <div class="web-sheet-title" id="webSheetTitle">Loading…</div>
+    <div class="web-sheet-close" onclick="closeWebSheet()"><i class="fa-solid fa-xmark"></i></div>
+  </div>
+  <div class="web-sheet-body">
+    <div class="web-sheet-loading" id="webSheetLoading">
+      <div class="spinner" style="width:36px;height:36px;border-width:3px"></div>
+      <div>Loading…</div>
+    </div>
+    <iframe id="webSheetFrame" allow="microphone;camera;autoplay;fullscreen"></iframe>
+  </div>
+</div>
+
+<div id="giftAnimLayer"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getDatabase, ref, onValue, set, update, remove, get, onDisconnect, push, query, limitToLast, runTransaction } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+/* ========== FIREBASE ========== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCTn3QEYtRMxm7Y91RSFSvbRJSRHcXMEdI",
+  authDomain: "room-7fbf7.firebaseapp.com",
+  databaseURL: "https://room-7fbf7-default-rtdb.firebaseio.com",
+  projectId: "room-7fbf7",
+  storageBucket: "room-7fbf7.firebasestorage.app",
+  messagingSenderId: "417946695868",
+  appId: "1:417946695868:web:564bb9c8a06f7c90b2b8b9"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const rtdb = getDatabase(app);
+
+/* ========== ROOM ID ========== */
+const p = new URLSearchParams(location.search);
+const ROOM_ID = p.get("room") || p.get("id") || null;
+
+if (!ROOM_ID){
+  document.body.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#fff;padding:30px;text-align:center;gap:18px"><h2>রুম আইডি নেই</h2><a href="https://farjanaaktar1173-boop.github.io/Homepage/" style="padding:13px 32px;border-radius:50px;background:linear-gradient(135deg,#a855f7,#6366f1);color:#fff;text-decoration:none;font-weight:600">হোম পেজে যান</a></div>`;
+  throw new Error("No room");
+}
+
+const RTT = `rooms/${ROOM_ID}`;
+
+/* ========== WEB LINKS ========== */
+const WEB_LINKS = {
+  chat  : "https://farjanaaktar1173-boop.github.io/Chat/",
+  emoji : "https://farjanaaktar1173-boop.github.io/Emoje/",
+  gift  : "https://farjanaaktar1173-boop.github.io/Gift/",
+  games : "https://farjanaaktar1173-boop.github.io/Game/"
+};
+const WEB_TITLES = { chat:"Chat", emoji:"Reactions", gift:"Gift", games:"Games" };
+
+/* ========== HELPERS ========== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const GUEST_AV = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="#3b2a4f"/><circle cx="50" cy="40" r="18" fill="#7a6a8f"/><ellipse cx="50" cy="88" rx="30" ry="22" fill="#7a6a8f"/></svg>`);
+
+/* ========== STATE ========== */
+const state = {
+  roomName: "FM",
+  roomLogo: null,
+  roomId: ROOM_ID,
+  owner: null,
+  topic: "",
+  seats: new Array(10).fill(null),
+  listeners: [],          // RTDB live (audience + members)
+  messages: [],
+  monthlyDiamonds: 0
+};
+
+let myProfile = null;
+let myMembership = null;     // Firestore members/{uid} ডেটা
+let isFollowing = false;     // my following list-এ আছে কি না
+let joined = false;
+let myListenerRef = null;
+let lastActTs = 0;
+let lastSeenReactTs = 0;
+let lastSeenGiftTs = 0;
+let isRoomOwner = false;
+let isRoomAdmin = false;
+
+const invitedUsers = new Set();
+
+/* ========== BOOTSTRAP ========== */
+(function bootstrap(){
+  try {
+    const s = localStorage.getItem("moi_user");
+    if (!s) return;
+    const u = JSON.parse(s);
+    if (!u || !u.uid) return;
+    myProfile = {
+      uid: u.uid, name: u.name || "User",
+      avatar: u.photo || u.avatar || GUEST_AV,
+      email: u.email || "",
+      moiId: u.moiId || "",
+      country: u.country || "",
+      voice: u.voice || "",
+      diamonds: u.diamonds ?? 1000
+    };
+    const av = $("my-avatar-top");
+    if (av) av.src = myProfile.avatar;
+  } catch(e){}
+})();
+
+/* ========== AUTH ========== */
+onAuthStateChanged(auth, async user => {
+  if (user){
+    if (!myProfile || myProfile.uid !== user.uid){
+      let name = user.displayName || "User";
+      let avatar = user.photoURL || GUEST_AV;
+      let moiId = "", country = "", voice = "", diamonds = 1000;
+      try {
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()){
+          const u = snap.data();
+          name = u.name || name;
+          avatar = u.photo || u.avatar || avatar;
+          moiId = u.moiId || "";
+          country = u.country || "";
+          voice = u.voice || "";
+          diamonds = u.diamonds ?? 1000;
+        }
+      } catch(e){}
+      myProfile = { uid:user.uid, name, avatar, email:user.email||"", moiId, country, voice, diamonds };
+    }
+    $("my-avatar-top").src = myProfile.avatar;
+    if (!joined){ joined = true; joinRoom(); }
+  }
+});
+
+/* ========== LOAD ROOM FROM FIRESTORE ========== */
+async function loadRoom(){
+  try {
+    const snap = await getDoc(doc(db, "rooms", ROOM_ID));
+    if (!snap.exists()){
+      $("loadingText").textContent = "রুম পাওয়া যায়নি";
+      setTimeout(() => location.href = "https://farjanaaktar1173-boop.github.io/Homepage/", 1500);
+      return false;
+    }
+    const d = snap.data();
+    state.roomName = d.name || "FM";
+    state.roomLogo = d.logo || null;
+    state.owner = { uid:d.ownerUid, name:d.ownerName, avatar:d.ownerPhoto };
+    state.topic = d.topic || "🎧 Welcome";
+    state.monthlyDiamonds = d.monthlyDiamonds || 0;
+
+    isRoomOwner = myProfile && myProfile.uid === state.owner.uid;
+    renderBranding();
+    renderMessageFeed();
+    return true;
+  } catch(e){
+    console.error(e);
+    return false;
+  }
+}
+
+/* ========== MEMBERSHIP CHECK ========== */
+async function checkMembership(){
+  if (!myProfile) return;
+  try {
+    // Firestore-এ আমার following আছে কি?
+    const uSnap = await getDoc(doc(db, "users", myProfile.uid));
+    if (uSnap.exists()){
+      const u = uSnap.data();
+      const following = u.following || {};
+      isFollowing = !!following[ROOM_ID];
+    }
+    // Firestore-এ members/{uid}
+    const mSnap = await getDoc(doc(db, "rooms", ROOM_ID, "members", myProfile.uid));
+    if (mSnap.exists()){
+      myMembership = mSnap.data();
+      isRoomAdmin = myMembership.role === "admin";
+    } else {
+      myMembership = null;
+      isRoomAdmin = false;
+    }
+    updateJoinBar();
+  } catch(e){ console.warn(e); }
+}
+
+function updateJoinBar(){
+  const bar = $("joinBar");
+  const btn = $("joinBtn");
+  if (!myProfile){
+    bar.style.display = "none";
+    return;
+  }
+  if (isRoomOwner){
+    bar.style.display = "none";  // Owner নিজের রুমে Join দেখাবে না
+    return;
+  }
+  bar.style.display = "flex";
+  if (isFollowing){
+    btn.className = "join-btn joined";
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Joined';
+    btn.disabled = false;
+    btn.onclick = leaveRoom;
+  } else {
+    btn.className = "join-btn join";
+    btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Join Room';
+    btn.disabled = false;
+    btn.onclick = joinAsMember;
+  }
+}
+
+async function joinAsMember(){
+  if (!myProfile) return;
+  const btn = $("joinBtn");
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite"></span> Joining...';
+
+  try {
+    const now = Date.now();
+    // Firestore: members
+    await setDoc(doc(db, "rooms", ROOM_ID, "members", myProfile.uid), {
+      uid: myProfile.uid,
+      name: myProfile.name,
+      photo: myProfile.avatar,
+      moiId: myProfile.moiId,
+      role: "member",
+      joinedAt: now
+    });
+    // Firestore: my following
+    await setDoc(doc(db, "users", myProfile.uid), {
+      following: { [ROOM_ID]: true }
+    }, { merge: true });
+
+    // RTDB listener-এ role update
+    if (myListenerRef){
+      await update(myListenerRef, { role: "member" });
+    }
+
+    isFollowing = true;
+    toastMsg("✅ রুমে জয়েন করলেন");
+    updateJoinBar();
+  } catch(e){
+    console.error(e);
+    toastMsg("❌ " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function leaveRoom(){
+  if (!myProfile) return;
+  if (!confirm("রুম থেকে লিভ করতে চান?")) return;
+  try {
+    await deleteDoc(doc(db, "rooms", ROOM_ID, "members", myProfile.uid));
+    await updateDoc(doc(db, "users", myProfile.uid), {
+      [`following.${ROOM_ID}`]: null
+    });
+    isFollowing = false;
+    isRoomAdmin = false;
+    myMembership = null;
+    // সিটে থাকলে সিট ছাড়ি
+    const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+    if (idx > -1) await remove(ref(rtdb, `${RTT}/seats/${idx}`));
+    if (myListenerRef) await update(myListenerRef, { role: "audience" });
+    toastMsg("রুম থেকে লিভ করলেন");
+    updateJoinBar();
+  } catch(e){
+    console.error(e);
+    toastMsg("❌ " + e.message);
+  }
+}
+
+/* ========== JOIN ROOM (RTDB presence) ========== */
+async function joinRoom(){
+  if (!myProfile) return;
+  myListenerRef = ref(rtdb, `${RTT}/listeners/${myProfile.uid}`);
+  const existingSnap = await get(myListenerRef);
+  const existing = existingSnap.val() || {};
+
+  const role = isRoomOwner ? "owner" : (myMembership?.role || existing.role || "audience");
+
+  await set(myListenerRef, {
+    uid: myProfile.uid,
+    name: myProfile.name,
+    avatar: myProfile.avatar,
+    email: myProfile.email,
+    moiId: myProfile.moiId,
+    country: myProfile.country,
+    role: role,
+    joined: existing.joined || Date.now()
+  });
+  onDisconnect(myListenerRef).remove();
+
+  // সিটে থাকলে আবার সেট করি
+  const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+  if (idx > -1){
+    const seatRef = ref(rtdb, `${RTT}/seats/${idx}`);
+    await set(seatRef, {
+      uid: myProfile.uid, name: myProfile.name, avatar: myProfile.avatar,
+      role: getMyRole(), mic: true, locked: false, started: Date.now()
+    });
+    onDisconnect(seatRef).remove();
+  }
+}
+
+window.addEventListener("beforeunload", () => {
+  // onDisconnect handles cleanup
+});
+
+/* ========== ROLE HELPERS ========== */
+function getMyRole(){
+  if (!myProfile) return null;
+  if (state.owner && state.owner.uid === myProfile.uid) return "owner";
+  if (myMembership?.role === "admin") return "admin";
+  const me = state.listeners.find(x => x.uid === myProfile.uid);
+  return me?.role || "audience";
+}
+function isOwner(){ return getMyRole() === "owner"; }
+function isAdminOrOwner(){ const r = getMyRole(); return r === "owner" || r === "admin"; }
+function getRoleOf(uid){
+  if (state.owner && state.owner.uid === uid) return "owner";
+  const m = state.listeners.find(x => x.uid === uid);
+  return m?.role || "audience";
+}
+function roleBadgeHTML(role, size){
+  if (role === "owner") return `<i class="fa-solid fa-crown" style="color:#ffb400;font-size:${size}px"></i>`;
+  if (role === "admin") return `<i class="fa-solid fa-shield-halved" style="color:#22c55e;font-size:${size}px"></i>`;
+  return "";
+}
+function roleBorderClass(r){
+  if (r === "owner") return "owner-border";
+  if (r === "admin") return "admin-border";
+  return "";
+}
+function roleBadgeClass(r, isMe){
+  if (isMe) return "me";
+  if (r === "owner") return "owner";
+  if (r === "admin") return "admin";
+  if (r === "member") return "member";
+  return "audience";
+}
+function roleLabel(r, isMe){
+  if (isMe) return "You";
+  if (r === "owner") return "Owner";
+  if (r === "admin") return "Admin";
+  if (r === "member") return "Member";
+  return "Audience";
+}
+
+/* ========== LISTEN RTDB ========== */
+function listenRTDB(){
+  // SEATS
+  onValue(ref(rtdb, `${RTT}/seats`), snap => {
+    const data = snap.val() || {};
+    state.seats = Array.from({length:10}, (_, i) => data[i] || null);
+    renderSeats();
+    updateMicBtn();
+  });
+
+  // LISTENERS
+  onValue(ref(rtdb, `${RTT}/listeners`), snap => {
+    const data = snap.val() || {};
+    state.listeners = Object.values(data).sort((a,b) => (a.joined||0) - (b.joined||0));
+    $("userCountBadge").textContent = state.listeners.length;
+    renderListenerList();
+    renderMemberList();
+    updateRoomPoints();
+    // admin sync (যদি কেউ role update করে)
+    if (myProfile){
+      const meL = state.listeners.find(x => x.uid === myProfile.uid);
+      if (meL && meL.role === "admin") isRoomAdmin = true;
+    }
+  });
+
+  // MESSAGES
+  onValue(query(ref(rtdb, `${RTT}/messages`), limitToLast(100)), snap => {
+    const data = snap.val() || {};
+    state.messages = Object.entries(data).map(([k,v]) => ({id:k, ...v})).sort((a,b) => (a.ts||0) - (b.ts||0));
+    renderMessageFeed();
+  });
+
+  // ACTIVITY
+  onValue(query(ref(rtdb, `${RTT}/activity`), limitToLast(1)), snap => {
+    const data = snap.val(); if (!data) return;
+    const [, latest] = Object.entries(data)[0];
+    if (!latest || latest.ts <= lastActTs) return;
+    if (latest.uid === myProfile?.uid){ lastActTs = latest.ts; return; }
+    lastActTs = latest.ts;
+    showActivity(latest);
+  });
+
+  // REACTIONS
+  onValue(query(ref(rtdb, `${RTT}/reactions`), limitToLast(10)), snap => {
+    const data = snap.val(); if (!data) return;
+    Object.entries(data).sort((a,b) => (a[1].ts||0) - (b[1].ts||0)).forEach(([k, r]) => {
+      if (!r || !r.ts || r.ts <= lastSeenReactTs) return;
+      lastSeenReactTs = r.ts;
+      showSeatReaction(r.seat, r.code, r.src);
+    });
+  });
+
+  // GIFTS
+  const pageLoadTs = Date.now();
+  onValue(query(ref(rtdb, `${RTT}/gifts`), limitToLast(5)), snap => {
+    const data = snap.val(); if (!data) return;
+    Object.entries(data).sort((a,b) => (a[1].ts||0) - (b[1].ts||0)).forEach(([k, g]) => {
+      if (!g || !g.ts || g.ts <= pageLoadTs) return;
+      if (g.ts <= lastSeenGiftTs) return;
+      lastSeenGiftTs = g.ts;
+      playGiftAnimation({ name:g.giftName, emoji:g.emoji, image:g.image, targetName:g.targetName }, g.targetUid);
+    });
+  });
+
+  // MONTHLY DIAMONDS sync
+  onSnapshot(doc(db, "rooms", ROOM_ID), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    state.monthlyDiamonds = d.monthlyDiamonds || 0;
+    updateRoomPoints();
+  });
+}
+
+/* ========== RENDER SEATS ========== */
+function renderSeats(){
+  $("seatsGrid").innerHTML = state.seats.map((s, i) => {
+    let inner, cls = "seat-avatar", badge = "", roleBadge = "";
+    if (!s){ inner = `<i class="fa-solid fa-couch"></i>`; }
+    else if (s.locked && !s.uid){ cls += " locked"; inner = `<i class="fa-solid fa-lock"></i>`; }
+    else {
+      cls += " occupied";
+      if (myProfile && s.uid === myProfile.uid) cls += " is-me";
+      const r = s.role || getRoleOf(s.uid);
+      if (r === "owner"){ cls += " is-owner"; roleBadge = `<span class="role-badge-seat owner"><i class="fa-solid fa-crown"></i></span>`; }
+      else if (r === "admin"){ cls += " is-admin"; roleBadge = `<span class="role-badge-seat admin"><i class="fa-solid fa-shield-halved"></i></span>`; }
+      inner = `<img src="${s.avatar||GUEST_AV}">`;
+      if (s.locked) badge = `<span class="lock-badge"><i class="fa-solid fa-lock"></i></span>`;
+      else badge = `<span class="mic-badge ${s.mic?'on':'off'}"><i class="fa-solid fa-microphone${s.mic?'':'-slash'}"></i></span>`;
+    }
+    const label = s && s.name ? esc(s.name) : (s && s.locked ? "Locked" : (i+1));
+    return `<div class="seat" data-seat="${i}">
+      <div class="${cls}" onclick="openSeatSheet(${i})">
+        <div class="seat-reaction-layer" id="reactLayer${i}"></div>
+        ${roleBadge}${inner}${badge}
+      </div>
+      <div class="seat-meta">
+        <div class="seat-number ${s && s.name ? 'taken' : ''}">${label}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function updateRoomPoints(){
+  $("roomPointsVal").textContent = (state.monthlyDiamonds || 0).toLocaleString("en-IN");
+}
+
+/* ========== MESSAGE FEED ========== */
+function renderMessageFeed(){
+  $("topicText").textContent = state.topic || "টপিক নেই";
+  const list = $("messagesList");
+  if (!state.messages.length){
+    list.innerHTML = `<div class="msg-empty">এখনো কোনো মেসেজ নেই...</div>`;
+    return;
+  }
+  list.innerHTML = state.messages.slice(-60).map(m => {
+    if (m.type === "gift") return `<div class="msg-item">🎁 <span class="msg-name">${esc(m.name)}</span>${esc(m.text)}</div>`;
+    return `<div class="msg-item"><span class="msg-name">${esc(m.name)}</span>${esc(m.text)}</div>`;
+  }).join("");
+  $("messageFeed").scrollTop = $("messageFeed").scrollHeight;
+}
+
+/* ========== BRANDING ========== */
+function brandInner(){
+  if (state.roomLogo) return `<img src="${state.roomLogo}">`;
+  const parts = esc(state.roomName || "FM").split(/\s+/).slice(0,2).join("<br>");
+  return `<span class="cassette-text">${parts}</span>`;
+}
+
+function renderBranding(){
+  $("room-logo-preview").innerHTML = brandInner();
+  $("room-name-display").textContent = state.roomName;
+  $("room-logo-modal").innerHTML = brandInner();
+  $("room-name-modal-display").textContent = state.roomName;
+  $("room-id-modal").textContent = "ID: " + ROOM_ID.slice(0,10) + "…";
+  const oi = $("owner-info-modal");
+  if (state.owner && state.owner.name){
+    oi.style.display = "flex";
+    oi.innerHTML = `<img src="${state.owner.avatar||GUEST_AV}" style="width:34px;height:34px;border-radius:50%;border:2px solid #F5D76E;object-fit:cover">
+      <div style="text-align:left"><div style="font-size:12px;color:#fff;font-weight:600">${esc(state.owner.name)}</div><div style="font-size:10px;color:#aaa">Owner</div></div>
+      <i class="fa-solid fa-crown" style="color:#ffb400;font-size:14px;margin-left:6px"></i>`;
+  } else {
+    oi.style.display = "none";
+  }
+}
+
+/* ========== SEAT SHEET ========== */
+function showSheetOptions(title, options){
+  $("sheetTitle").textContent = title;
+  $("sheetOptions").innerHTML = options.map((o,k) => 
+    `<div class="sheet-option ${o.danger?'danger':''} ${o.cls||''}" data-k="${k}">
+      <span class="opt-icon"><i class="fa-solid ${o.icon}"></i></span>
+      <span class="opt-label">${o.label}</span>
+      <i class="fa-solid fa-chevron-right" style="font-size:11px;color:#666"></i>
+    </div>`).join("");
+  $("sheetOptions").querySelectorAll(".sheet-option").forEach(el => 
+    el.addEventListener("click", () => options[+el.dataset.k].action()));
+  $("sheetBackdrop").classList.add("active");
+  $("seatSheet").classList.add("active");
+}
+
+window.openSeatSheet = (i) => {
+  if (!myProfile){ toastMsg("লগইন করুন"); return; }
+  const s = state.seats[i];
+  let title, options;
+
+  if (!s){
+    title = `Seat #${i+1}`;
+    options = [
+      { icon:"fa-microphone-lines", label:"Take the mic", action:() => takeMic(i) },
+      { icon:"fa-lock", label:"Lock the mic", cls:"gold", action:() => lockMic(i) }
+    ];
+  } else if (s.locked && !s.uid){
+    title = `Seat #${i+1} (Locked)`;
+    options = [
+      { icon:"fa-microphone-lines", label:"Take the mic", action:() => takeMic(i) },
+      { icon:"fa-lock-open", label:"Unlock the mic", cls:"green", action:() => unlockMic(i) }
+    ];
+  } else if (s.locked && s.uid && s.uid !== myProfile?.uid){
+    title = s.name + " (Locked)";
+    options = [{ icon:"fa-lock-open", label:"Unlock the mic", cls:"green", action:() => unlockMic(i) }];
+    if (isAdminOrOwner()) options.push({ icon:"fa-user-minus", label:"Kick from mic", danger:true, action:() => kickSeat(i, s.name) });
+  } else if (s.uid === myProfile?.uid){
+    title = "My Seat";
+    options = [
+      { icon:"fa-gift", label:"Send gift to me", cls:"purple", action:() => { closeSheet(); setTimeout(() => openWebSheet("gift"), 180); } },
+      { icon:"fa-microphone-slash", label:"Leave the mic", danger:true, action:() => leaveMic(i) }
+    ];
+  } else {
+    // অন্য কেউ → প্রোফাইল দেখাই (এখন simple toast)
+    closeSheet();
+    setTimeout(() => openUserProfile(s.uid), 120);
+    return;
+  }
+  showSheetOptions(title, options);
+};
+
+window.closeSheet = () => {
+  $("sheetBackdrop").classList.remove("active");
+  ["seatSheet","msgSheet","chatSheet"].forEach(id => $(id)?.classList.remove("active"));
+  const f = $("chatSheetFrame");
+  if (f) f.src = "about:blank";
+};
+
+/* ========== SEAT ACTIONS ========== */
+async function takeMic(i){
+  if (!myProfile){ toastMsg("লগইন করুন"); return; }
+  if (!isFollowing && !isRoomOwner){ toastMsg("প্রথমে Join দিন"); closeSheet(); return; }
+  const prev = state.seats[i];
+  if (prev && prev.locked && prev.uid && prev.uid !== myProfile.uid && !isAdminOrOwner()){
+    toastMsg("সিট লক করা"); closeSheet(); return;
+  }
+  const old = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+  if (old > -1 && old !== i) await remove(ref(rtdb, `${RTT}/seats/${old}`));
+  const seatRef = ref(rtdb, `${RTT}/seats/${i}`);
+  await set(seatRef, {
+    uid: myProfile.uid, name: myProfile.name, avatar: myProfile.avatar,
+    role: getMyRole(), mic: true, locked: false, started: Date.now()
+  });
+  onDisconnect(seatRef).remove();
+  logActivity("takeMic", i);
+  closeSheet();
+}
+
+async function leaveMic(i){
+  if (!state.seats[i] || state.seats[i].uid !== myProfile.uid) return;
+  await remove(ref(rtdb, `${RTT}/seats/${i}`));
+  logActivity("leaveMic", i);
+  closeSheet();
+}
+
+async function lockMic(i){
+  if (!isAdminOrOwner()){ toastMsg("শুধু Owner/Admin পারবে"); closeSheet(); return; }
+  const s = state.seats[i];
+  if (!s) await set(ref(rtdb, `${RTT}/seats/${i}`), { locked:true, by:myProfile.name });
+  else await update(ref(rtdb, `${RTT}/seats/${i}`), { locked:true });
+  logActivity("lockMic", i); closeSheet();
+}
+
+async function unlockMic(i){
+  if (!isAdminOrOwner()){ toastMsg("শুধু Owner/Admin পারবে"); closeSheet(); return; }
+  const s = state.seats[i];
+  if (!s || !s.locked) return;
+  if (s.uid) await update(ref(rtdb, `${RTT}/seats/${i}`), { locked:false });
+  else await remove(ref(rtdb, `${RTT}/seats/${i}`));
+  logActivity("unlockMic", i); closeSheet();
+}
+
+async function kickSeat(i, name){
+  if (!isAdminOrOwner()){ toastMsg("শুধু Owner/Admin পারবে"); return; }
+  await remove(ref(rtdb, `${RTT}/seats/${i}`));
+  logActivity("kick", i, { target:name });
+  closeSheet();
+  toastMsg(`👢 ${name} কে কিক`);
+}
+
+/* ========== MIC TOGGLE ========== */
+window.toggleMyMic = async () => {
+  if (!myProfile){ toastMsg("লগইন করুন"); return; }
+  const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+  if (idx === -1){ toastMsg("আগে একটা সিটে উঠুন 🎤"); return; }
+  const on = !state.seats[idx].mic;
+  await update(ref(rtdb, `${RTT}/seats/${idx}`), { mic:on });
+  logActivity(on ? "unmute" : "mute", idx);
+  toastMsg(on ? "আনমিউট 🔊" : "মিউট 🔇");
+};
+
+function updateMicBtn(){
+  const btn = $("micToggleBtn");
+  if (!btn) return;
+  if (!myProfile){ btn.classList.remove("mic-on","mic-off"); btn.innerHTML = '<i class="fa-solid fa-microphone"></i>'; return; }
+  const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+  if (idx === -1){ btn.classList.remove("mic-on","mic-off"); btn.innerHTML = '<i class="fa-solid fa-microphone"></i>'; return; }
+  const on = state.seats[idx].mic;
+  btn.classList.toggle("mic-on", on);
+  btn.classList.toggle("mic-off", !on);
+  btn.innerHTML = on ? '<i class="fa-solid fa-microphone"></i>' : '<i class="fa-solid fa-microphone-slash"></i>';
+}
+
+/* ========== MESSAGE INPUT ========== */
+window.openMessageInput = () => {
+  if (!myProfile){ toastMsg("লগইন করুন"); return; }
+  closeSheet();
+  $("sheetBackdrop").classList.add("active");
+  $("msgSheet").classList.add("active");
+  setTimeout(() => $("chatInput").focus(), 250);
+};
+
+window.sendChatMessage = async () => {
+  if (!myProfile) return;
+  const text = $("chatInput").value.trim();
+  if (!text) return;
+  $("chatInput").value = "";
+  await push(ref(rtdb, `${RTT}/messages`), {
+    uid:myProfile.uid, name:myProfile.name, avatar:myProfile.avatar,
+    text, type:"text", ts:Date.now()
+  });
+  closeSheet();
+};
+
+/* ========== TOPIC EDIT ========== */
+window.editTopic = async () => {
+  if (!myProfile){ toastMsg("লগইন করুন"); return; }
+  if (!isAdminOrOwner()){ toastMsg("শুধু Owner/Admin পারবে"); return; }
+  const next = prompt("রুমের টপিক:", state.topic || "");
+  if (next === null) return;
+  const topic = next.trim() || "🎧 Welcome";
+  await updateDoc(doc(db, "rooms", ROOM_ID), { topic });
+  state.topic = topic;
+  renderMessageFeed();
+  toastMsg("টপিক আপডেট ✅");
+};
+
+/* ========== ACTIVITY ========== */
+function logActivity(action, seat, extra={}){
+  if (!myProfile) return;
+  push(ref(rtdb, `${RTT}/activity`), {
+    uid:myProfile.uid, name:myProfile.name, avatar:myProfile.avatar,
+    action, seat, ts:Date.now(), ...extra
+  });
+}
+
+function showActivity(a){
+  const ICONS = {takeMic:"🎤",leaveMic:"🚪",lockMic:"🔒",unlockMic:"🔓",mute:"🔇",unmute:"🔊",join:"👋",leave:"👋",kick:"👢",react:"😊",heart:"❤️"};
+  const LABELS = {takeMic:"মাইকে উঠেছেন",leaveMic:"সিট ছেড়েছেন",lockMic:"লক",unlockMic:"আনলক",mute:"মিউট",unmute:"আনমিউট",join:"ঢুকলেন",leave:"বেরুলেন",kick:"কিক",react:"রিঅ্যাক্ট",heart:"গিফট"};
+  const el = document.createElement("div");
+  el.className = "activity-item";
+  el.innerHTML = `<span style="margin-right:5px">${ICONS[a.action]||"✨"}</span>${esc(a.name)} ${esc(LABELS[a.action]||a.action)}${(a.seat!=null)?` #${a.seat+1}`:""}${a.target?" "+esc(a.target):""}`;
+  $("activityStrip").appendChild(el);
+  setTimeout(() => {
+    el.style.transition = "opacity .4s";
+    el.style.opacity = "0";
+    setTimeout(() => el.remove(), 400);
+  }, 5000);
+  while ($("activityStrip").children.length > 5) $("activityStrip").firstChild.remove();
+}
+
+/* ========== SEAT REACTION ========== */
+function showSeatReaction(seatIndex, code, src){
+  if (seatIndex < 0 || seatIndex >= 10) return;
+  const seatEl = document.querySelector(`.seat[data-seat="${seatIndex}"] .seat-avatar`);
+  const layer = $("reactLayer" + seatIndex);
+  if (!seatEl || !layer) return;
+  seatEl.classList.add("seat-react-dim");
+  setTimeout(() => seatEl.classList.remove("seat-react-dim"), 2200);
+  const burst = document.createElement("div");
+  burst.className = "seat-react-burst";
+  layer.appendChild(burst);
+  setTimeout(() => burst.remove(), 900);
+  for (let i = 0; i < 3; i++){
+    setTimeout(() => {
+      const img = document.createElement("img");
+      img.className = "seat-react";
+      img.src = src;
+      img.onerror = () => {
+        const div = document.createElement("div");
+        div.className = "seat-react";
+        div.style.display = "grid";
+        div.style.placeItems = "center";
+        div.style.fontSize = "26px";
+        div.style.color = "#fff";
+        div.textContent = "😊";
+        img.replaceWith(div);
+      };
+      layer.appendChild(img);
+      setTimeout(() => img.remove(), 2400);
+    }, i * 80);
+  }
+}
+
+/* ========== LISTENERS / MEMBERS ========== */
+function renderListenerList(){
+  const list = $("listenerList");
+  if (!state.listeners.length){
+    list.innerHTML = `<div class="empty-msg">কেউ নেই</div>`;
+    return;
+  }
+  list.innerHTML = state.listeners.map(u => {
+    const isMe = myProfile && u.uid === myProfile.uid;
+    const r = u.role || "audience";
+    return `<div class="user-card" onclick="openUserProfile('${esc(u.uid)}')">
+      <div class="user-avatar-box">
+        <img src="${u.avatar||GUEST_AV}" class="user-avatar ${roleBorderClass(r)}">
+        <div class="user-badge ${roleBadgeClass(r,isMe)}">${roleLabel(r,isMe)}</div>
+      </div>
+      <div class="user-details">
+        <div class="user-name-row">${esc(u.name)}${r==="owner"?'<i class="fa-solid fa-crown" style="color:#ffb400;font-size:12px"></i>':""}${r==="admin"?'<i class="fa-solid fa-shield-halved" style="color:#22c55e;font-size:12px"></i>':""}</div>
+        <div class="user-desc">${esc(u.moiId||u.uid.slice(0,10))}</div>
+      </div>
+      <i class="fa-solid fa-user" style="color:#00E5FF;font-size:18px"></i>
+    </div>`;
+  }).join("");
+}
+
+function renderMemberList(){
+  // Members = যাদের role member/admin/owner
+  const members = state.listeners.filter(u => ["owner","admin","member"].includes(u.role || "audience"));
+  const list = $("memberList");
+  if (!members.length){
+    list.innerHTML = `<div class="empty-msg">এখনো কোনো মেম্বার নেই</div>`;
+    return;
+  }
+  list.innerHTML = members.map(u => {
+    const isMe = myProfile && u.uid === myProfile.uid;
+    const r = u.role || "member";
+    return `<div class="user-card" onclick="openUserProfile('${esc(u.uid)}')">
+      <div class="user-avatar-box">
+        <img src="${u.avatar||GUEST_AV}" class="user-avatar ${roleBorderClass(r)}">
+        <div class="user-badge ${roleBadgeClass(r,isMe)}">${roleLabel(r,isMe)}</div>
+      </div>
+      <div class="user-details">
+        <div class="user-name-row">${esc(u.name)}</div>
+        <div class="user-desc">${esc(u.moiId||u.uid.slice(0,10))}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ========== USER PROFILE (simple — শুধু owner/admin কিক/মিউট) ========== */
+window.openUserProfile = (uid) => {
+  const u = state.listeners.find(x => x.uid === uid);
+  if (!u){ toastMsg("ইউজার পাওয়া যায়নি"); return; }
+  const isMe = myProfile && u.uid === myProfile.uid;
+  const r = u.role || "audience";
+
+  const options = [];
+  const seatIdx = state.seats.findIndex(s => s && s.uid === uid);
+  if (seatIdx > -1 && !isMe && isAdminOrOwner()){
+    const on = state.seats[seatIdx].mic;
+    options.push({ icon: on ? "fa-microphone-slash" : "fa-microphone", label: on ? "Mute" : "Unmute", cls:"cyan", action: async () => {
+      await update(ref(rtdb, `${RTT}/seats/${seatIdx}`), { mic: !on });
+      logActivity(on ? "mute" : "unmute", seatIdx, { target:u.name });
+      closeSheet();
+      toastMsg(on ? "মিউট 🔇" : "আনমিউট 🔊");
+    }});
+  }
+  if (!isMe && isOwner() && r !== "owner"){
+    if (r === "admin"){
+      options.push({ icon:"fa-user", label:"Remove Admin", cls:"gold", action: async () => {
+        await updateDoc(doc(db, "rooms", ROOM_ID, "members", uid), { role:"member" });
+        if (myListenerRef && u.uid !== myProfile.uid) await update(ref(rtdb, `${RTT}/listeners/${uid}`), { role:"member" });
+        if (seatIdx > -1) await update(ref(rtdb, `${RTT}/seats/${seatIdx}`), { role:"member" });
+        closeSheet();
+        toastMsg("এডমিন সরানো হয়েছে");
+      }});
+    } else if (r === "member"){
+      options.push({ icon:"fa-shield-halved", label:"Make Admin", cls:"gold", action: async () => {
+        await updateDoc(doc(db, "rooms", ROOM_ID, "members", uid), { role:"admin" });
+        await update(ref(rtdb, `${RTT}/listeners/${uid}`), { role:"admin" });
+        if (seatIdx > -1) await update(ref(rtdb, `${RTT}/seats/${seatIdx}`), { role:"admin" });
+        closeSheet();
+        toastMsg("👑 এডমিন বানানো হলো");
+      }});
+    }
+  }
+  if (!isMe && isAdminOrOwner()){
+    options.push({ icon:"fa-user-minus", label:"Kick from room", danger:true, action: async () => {
+      if (seatIdx > -1) await remove(ref(rtdb, `${RTT}/seats/${seatIdx}`));
+      if (myProfile.uid !== uid) await remove(ref(rtdb, `${RTT}/listeners/${uid}`));
+      await deleteDoc(doc(db, "rooms", ROOM_ID, "members", uid));
+      closeSheet();
+      toastMsg(`👢 ${u.name} কে কিক`);
+    }});
+  }
+  if (!options.length){ toastMsg("কোনো অ্যাকশন নেই"); return; }
+  showSheetOptions(u.name, options);
+};
+
+/* ========== MODALS ========== */
+window.closeModal = (id) => $(id).classList.remove("active");
+window.toggleMemberModal = () => $("memberModal").classList.toggle("active");
+window.toggleListenersModal = () => $("listenersModal").classList.toggle("active");
+
+/* ========== EXIT ========== */
+window.exitRoom = async () => {
+  if (!confirm("রুম থেকে বের হতে চান?")) return;
+  const idx = state.seats.findIndex(s => s && s.uid === myProfile?.uid);
+  if (idx > -1) await remove(ref(rtdb, `${RTT}/seats/${idx}`));
+  if (myListenerRef) await remove(myListenerRef);
+  location.href = "https://farjanaaktar1173-boop.github.io/Homepage/";
+};
+
+/* ========== TOAST ========== */
+let toastTimer;
+window.toastMsg = (msg) => {
+  const t = $("toastBox");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+};
+
+/* ========== WEB SHEET (iframe) ========== */
+window.openWebSheet = (key) => {
+  if (!myProfile){ toastMsg("লগইন করুন"); return; }
+  const baseUrl = WEB_LINKS[key];
+  if (!baseUrl){ toastMsg("শীঘ্রই আসছে"); return; }
+  let url = baseUrl;
+  if (key === "gift"){
+    const u = new URL(baseUrl);
+    u.searchParams.set("balance", myProfile.diamonds || 1000);
+    url = u.toString();
+  } else if (key === "games"){
+    const u = new URL(baseUrl);
+    u.searchParams.set("uid", myProfile.uid);
+    u.searchParams.set("name", myProfile.name);
+    u.searchParams.set("photo", myProfile.avatar);
+    url = u.toString();
+  }
+  $("webSheetTitle").textContent = WEB_TITLES[key] || key;
+  $("webSheetLoading").classList.remove("hidden");
+  $("webSheetFrame").src = url;
+  $("webSheetFrame").onload = () => $("webSheetLoading").classList.add("hidden");
+  $("webSheetBackdrop").classList.add("active");
+  $("webSheet").classList.add("active");
+  $("webSheet").classList.remove("fullscreen");
+};
+
+window.closeWebSheet = () => {
+  $("webSheet").classList.remove("active","fullscreen");
+  $("webSheetBackdrop").classList.remove("active");
+  setTimeout(() => $("webSheetFrame").src = "about:blank", 300);
+};
+
+/* ========== CHAT SHEET (iframe) ========== */
+window.openChatSheet = () => {
+  if (!myProfile){ toastMsg("লগইন করুন"); return; }
+  closeSheet();
+  $("chatSheetFrame").src = WEB_LINKS.chat;
+  $("sheetBackdrop").classList.add("active");
+  $("chatSheet").classList.add("active");
+};
+
+/* ========== IFRAME MESSAGES ========== */
+window.addEventListener("message", async (e) => {
+  const d = e.data;
+  if (!d) return;
+
+  if (d.type === "HOURFM_EMOJI"){
+    if (!myProfile){ toastMsg("লগইন করুন"); return; }
+    const idx = state.seats.findIndex(s => s && s.uid === myProfile.uid);
+    if (idx === -1){ toastMsg("আগে সিটে উঠুন"); return; }
+    await push(ref(rtdb, `${RTT}/reactions`), {
+      uid:myProfile.uid, name:myProfile.name, avatar:myProfile.avatar,
+      seat:idx, code:d.code, src:d.src, ts:Date.now()
+    });
+    logActivity("react", idx);
+    showSeatReaction(idx, d.code, d.src);
+    closeWebSheet();
+    return;
+  }
+
+  if (d.type === "HOURFM_GIFT"){
+    const price = Number(d.price) || 0;
+    if (!price) return;
+    // Balance check
+    if ((myProfile.diamonds || 0) < price){
+      toastMsg("❌ পর্যাপ্ত ডায়মন্ড নেই");
+      return;
+    }
+    await runTransaction(ref(rtdb, `users/${myProfile.uid}/diamonds`), x => Math.max(0, (x || 1000) - price));
+    myProfile.diamonds = Math.max(0, (myProfile.diamonds || 1000) - price);
+    // Update Firestore diamonds
+    await updateDoc(doc(db, "users", myProfile.uid), { diamonds: myProfile.diamonds });
+    // Room monthly diamonds
+    await updateDoc(doc(db, "rooms", ROOM_ID), { monthlyDiamonds: (state.monthlyDiamonds || 0) + price });
+    // Gift event
+    await push(ref(rtdb, `${RTT}/messages`), {
+      uid:myProfile.uid, name:myProfile.name, avatar:myProfile.avatar,
+      text:`${d.emoji || "🎁"} ${d.name || "Gift"} (💎${price})`,
+      type:"gift", ts:Date.now()
+    });
+    await push(ref(rtdb, `${RTT}/gifts`), {
+      uid:myProfile.uid, name:myProfile.name, avatar:myProfile.avatar,
+      giftName:d.name, emoji:d.emoji, image:d.image, price, ts:Date.now()
+    });
+    closeWebSheet();
+    return;
+  }
+
+  if (d.type === "GAME_CLOSE"){
+    closeWebSheet();
+    return;
+  }
+});
+
+/* ========== GIFT ANIMATION ========== */
+function playGiftAnimation(d, targetUid){
+  const layer = $("giftAnimLayer");
+  if (!layer) return;
+  const emoji = d.emoji || "🎁";
+  layer.innerHTML = "";
+  layer.classList.add("active");
+
+  const label = document.createElement("div");
+  label.className = "gift-anim-label";
+  label.textContent = `${emoji} ${d.name || "Gift"}`;
+  layer.appendChild(label);
+
+  const glow = document.createElement("div");
+  glow.className = "gift-anim-glow";
+  layer.appendChild(glow);
+
+  ["","pink","cyan"].forEach((cls,i) => {
+    const r = document.createElement("div");
+    r.className = "gift-anim-ring " + cls;
+    r.style.animationDelay = (i*220) + "ms";
+    layer.appendChild(r);
+  });
+
+  const cols = ["#ffd166","#ff7e5f","#ff2a74","#8b5cf6","#22d3ee","#fff"];
+  for (let i = 0; i < 24; i++){
+    const spark = document.createElement("div");
+    spark.className = "gift-anim-spark";
+    const angle = (Math.PI*2*i)/24 + (Math.random()-.5)*.3;
+    const dist = 150 + Math.random()*200;
+    const tx = Math.cos(angle)*dist, ty = Math.sin(angle)*dist;
+    const col = cols[i % cols.length];
+    const size = 6 + Math.random()*8;
+    spark.style.width = spark.style.height = size + "px";
+    spark.style.background = col;
+    spark.style.boxShadow = `0 0 10px ${col}, 0 0 22px ${col}`;
+    layer.appendChild(spark);
+    spark.animate([
+      { transform:"translate(-50%,-50%) scale(0)", opacity:0 },
+      { transform:`translate(-50%,-50%) translate(${tx*0.15}px,${ty*0.15}px) scale(1.4)`, opacity:1, offset:.18 },
+      { transform:`translate(-50%,-50%) translate(${tx}px,${ty}px) scale(0)`, opacity:0 }
+    ], { duration:1700, delay:200+Math.random()*250, fill:"forwards" });
+  }
+
+  const petals = ["🌸","🌺","🌷","🌹","🌻","✨","💫","💖"];
+  for (let i = 0; i < 18; i++){
+    const p = document.createElement("div");
+    p.className = "gift-anim-petal";
+    p.textContent = petals[Math.floor(Math.random()*petals.length)];
+    p.style.left = (Math.random()*100) + "%";
+    p.style.fontSize = (18+Math.random()*26) + "px";
+    layer.appendChild(p);
+    const drift = (Math.random()-.5)*180;
+    p.animate([
+      { transform:"translate(0,0) rotate(0deg) scale(.4)", opacity:0 },
+      { transform:`translate(${drift*0.3}px,25vh) rotate(120deg) scale(1)`, opacity:.95, offset:.25 },
+      { transform:`translate(${drift}px,110vh) rotate(360deg) scale(.85)`, opacity:0 }
+    ], { duration:2800, delay:Math.random()*700, fill:"forwards" });
+  }
+
+  const main = document.createElement("div");
+  main.className = "gift-anim-main";
+  main.textContent = emoji;
+  layer.appendChild(main);
+  main.animate([
+    { transform:"translate(-50%,-50%) scale(0.2) rotate(-30deg)", opacity:0, offset:0 },
+    { transform:"translate(-50%,-50%) scale(1.8) rotate(8deg)", opacity:1, offset:.25 },
+    { transform:"translate(-50%,-50%) scale(1.5) rotate(-4deg)", opacity:1, offset:.55 },
+    { transform:"translate(-50%,-50%) scale(0.05) rotate(20deg)", opacity:0 }
+  ], { duration:3200, easing:"cubic-bezier(.4,.05,.3,1)", fill:"forwards" });
+
+  setTimeout(() => {
+    layer.innerHTML = "";
+    layer.classList.remove("active");
+  }, 3600);
+}
+
+/* ========== INIT ========== */
+(async () => {
+  // myProfile fallback
+  if (!myProfile){
+    $("loadingText").textContent = "লগইন প্রয়োজন";
+    setTimeout(() => location.href = "https://farjanaaktar1173-boop.github.io/Homepage/", 1500);
+    return;
+  }
+  await checkMembership();
+  const ok = await loadRoom();
+  if (!ok) return;
+  listenRTDB();
+  $("loadingCover").classList.add("hidden");
+  console.log("🎧 Room:", ROOM_ID, "• UID:", myProfile.uid);
+})();
+</script>
+</body>
+</html>
